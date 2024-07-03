@@ -18,14 +18,19 @@ def start(mess):
 
 @bot.message_handler(commands=['Расчет скорости воздуха'])
 def test(message):
-    if message.text == 'Расчет скорости воздуха':
-        bot.send_message(message.chat.id, 'Введите значение A в метрах')
-        a = float(message.float)
-        bot.send_message(message.chat.id, 'Введите значение B в метрах')
-        b = float(message.float)
+    id = message.chat.id
+    text = message.text
+    bot.send_message(id, 'Введите значение A в метрах')
+    try:
+        a = float(text)
+        result = a * 5
+        bot.send_message(id, str(result))
+    except:
+        bot.send_message(id, 'Ошибка ввода')
 
-        result = a * b
-        bot.send_message(message.chat.id, str(result))
+
+
+
 
 
 
