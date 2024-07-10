@@ -6,10 +6,6 @@ import Class_vent
 bot = telebot.TeleBot('7336100479:AAE_KgTsKoCwMe1rctfOIDtfw0HgOnLzk4E')
 
 
-
-
-
-
 @bot.message_handler(commands=['start'])
 #Создание кнопок в модели
 def start(mess):
@@ -25,16 +21,29 @@ def start(mess):
     bot.send_message(mess.chat.id, 'Привет послушник!', reply_markup= markup)
 
 
+
+
 @bot.callback_query_handler(func=lambda call: True)
 def callback_worker(call):
     if call.data == "vent-1":
-        numvan = bot.send_message(call.message.chat.id, 'Введите значение A в метрах')
-        bot.register_next_step_handler(numvan, num1_fun)
+        bot.send_message(call.message.chat.id, 'Выберите тип воздуховода:', reply_markup=Class_vent.but_vozd)
+
+
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback(call1):
+    if call1.data == "r":
+        numtwo_a = bot.send_message(call1.message.chat.id, 'Введите диаметр воздуховода в метрах')
+        bot.register_next_step_handler(numtwo_a, num2_fun)
+    elif call1.data == "quadro":
+        numtwo_b = bot.send_message(call1.message.chat.id, 'Введите сторону А в метрах')
+        bot.register_next_step_handler(numtwo_b, num1_fun)
 
 def num1_fun(message):
     global num1
     num1 = message.text
-    numtwo = bot.send_message(message.chat.id, 'Введите значение B в метрах')
+    numtwo = bot.send_message(message.chat.id, 'Введите сторону B в метрах')
     bot.register_next_step_handler(numtwo, num2_fun)
 
 def num2_fun(message):
