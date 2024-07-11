@@ -66,3 +66,38 @@ def callback_func(querry):
 
 
 bot.polling(none_stop=False, interval=0)
+
+
+
+
+
+
+
+
+
+
+@bot.callback_query_handler(func=lambda callback: True)
+def language(callback):
+    text = f'Ещё раз привет, {callback.from_user.first_name}, я - бот <b>Cool Pictures</b>! \n\nЯ помогу Вам найти интересные картинки по вашему вкусу. Для начала выберите настроение картинки из плиток в низу экрана.👇'
+    if callback.data == 'vent-1':
+        markup1 = types.InlineKeyboardMarkup()
+        btn1 = types.InlineKeyboardButton('Продолжить', callback_data='да')
+        markup1.add(btn1)
+        bot.edit_message_text(f'Привет, {callback.from_user.first_name}! Вы выбрали <b>Русский</b> 🇷🇺 язык. <b>Продолжить?</b> \n\nIf you want to change your choice, write /lang', callback.message.chat.id, callback.message.message_id, parse_mode='html', reply_markup=markup1)
+
+    elif callback.data == 'eng':
+        markup2 = types.InlineKeyboardMarkup()
+        btn2 = types.InlineKeyboardButton('Continue', callback_data='yes')
+        markup2.add(btn2)
+        bot.edit_message_text(f'Hello, {callback.from_user.first_name}! You chose <b>English</b> 🇬🇧 language. <b>Continue?</b> \n\nЕсли вы хотите изменить свой выбор, напишите /lang', callback.message.chat.id, callback.message.message_id, parse_mode='html', reply_markup=markup2)
+
+    if callback.data == 'да':
+        text = text
+        markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+        btn1r = types.KeyboardButton('Весёлое 😄')
+        btn2r = types.KeyboardButton('Нейтральное 😐')
+        btn3r = types.KeyboardButton('Грустное 😔')
+        markup.add(btn1r)
+        markup.add(btn2r)
+        markup.add(btn3r)
+        bot.send_message(callback.from_user.id, text, parse_mode='html', reply_markup=markup)

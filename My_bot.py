@@ -21,24 +21,22 @@ def start(mess):
     bot.send_message(mess.chat.id, 'Привет послушник!', reply_markup= markup)
 
 
-
-
 @bot.callback_query_handler(func=lambda call: True)
 def callback_worker(call):
     if call.data == "vent-1":
-        bot.send_message(call.message.chat.id, 'Выберите тип воздуховода:', reply_markup=Class_vent.but_vozd)
+        #bot.send_message(call.message.chat.id, 'Выберите тип воздуховода: /Круглый', reply_markup=Class_vent.but_vozd)
+        bot.edit_message_text(
+            f'Привет, {call.from_user.first_name}! Вы выбрали <b>Русский</b> 🇷🇺 язык. <b>Продолжить?</b> \n\nIf you want to change your choice, write /car',
+            call.message.chat.id, call.message.message_id, parse_mode='html', reply_markup=Class_vent.but_vozd)
 
 
 
+@bot.message_handler(commands=['car'])
+def callback(message):
+    numtwo_a = bot.send_message(message.chat.id, 'Введите диаметр воздуховода в метрах')
+    bot.register_next_step_handler(numtwo_a, num2_fun)
 
-@bot.callback_query_handler(func=lambda call: True)
-def callback(call1):
-    if call1.data == "r":
-        numtwo_a = bot.send_message(call1.message.chat.id, 'Введите диаметр воздуховода в метрах')
-        bot.register_next_step_handler(numtwo_a, num2_fun)
-    elif call1.data == "quadro":
-        numtwo_b = bot.send_message(call1.message.chat.id, 'Введите сторону А в метрах')
-        bot.register_next_step_handler(numtwo_b, num1_fun)
+
 
 def num1_fun(message):
     global num1
@@ -60,6 +58,9 @@ def operi(message):
         bot.send_message(message.chat.id, val)
     except:
         bot.send_message(message.chat.id, "ошибка ведите /start")
+
+
+
 
 
 

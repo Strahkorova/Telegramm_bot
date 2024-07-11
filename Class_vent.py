@@ -10,5 +10,5 @@ but_ventilation.row(telebot.types.InlineKeyboardButton('Расход возду�
 
 
 but_vozd = telebot.types.InlineKeyboardMarkup()
-but_vozd.row(telebot.types.InlineKeyboardButton('круглый', callback_data='r'))
+but_vozd.row(telebot.types.InlineKeyboardButton('круглый', callback_data='round'))
 but_vozd.row(telebot.types.InlineKeyboardButton('прямоугольный', callback_data='quadro'))
