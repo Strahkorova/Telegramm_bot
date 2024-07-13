@@ -1,6 +1,6 @@
 import telebot
 from telebot import types
-from Class_vent import calculation
+from Class_vent import calculation, assimialtion_thermo_and_cool
 import Class_vent
 
 bot = telebot.TeleBot('7336100479:AAE_KgTsKoCwMe1rctfOIDtfw0HgOnLzk4E')
@@ -32,6 +32,13 @@ def callback_worker(call):
     elif call.data == "vent-3":
         bot.edit_message_text(f'Необходимо выбрать тип воздуховода:\n Круглый - /round_1 \n Прямоугольный - /rectangle_1',
             call.message.chat.id, call.message.message_id, parse_mode='html')
+    elif call.data == "vent-4":
+        bot.edit_message_text(f'Необходимо выбрать вид обработки воздуховода:\n Нагрев - /heat \n Охлаждение - /cool',
+            call.message.chat.id, call.message.message_id, parse_mode='html')
+    elif call.data == "vent-5":
+        bot.edit_message_text(f'Необходимо выбрать цель ассимиляции:\n Удавление теплоты - /delete_heat \n Удавление влаги - /delete_water',
+            call.message.chat.id, call.message.message_id, parse_mode='html')
+
 
 #Расчет площади сечения воздуховода
 def scor_1(message):
@@ -43,6 +50,72 @@ def scor_2(message):
     calculation.ploshad(message, L)
 
 
+@bot.message_handler(commands=['delete_heat', 'delete_water'])
+def open(message):
+    global comm_assim
+    comm_assim = message.text
+    if comm_assim == '/delete_heat':
+        num = bot.send_message(message.chat.id, 'Укажите количество удаляемой теплоты в кВт')
+        bot.register_next_step_handler(num, plotnost_assim)
+    elif comm_assim == '/delete_water':
+        num = bot.send_message(message.chat.id, 'Укажите количество удаляемой влаги в г/час')
+        bot.register_next_step_handler(num, plotnost_assim)
+
+def plotnost_assim(message):
+    global Q
+    Q = message.text
+    plot = bot.send_message(message.chat.id, 'Укажите плотность воздуха в кг/м3')
+    bot.register_next_step_handler(plot, delta_first)
+
+def delta_first(message):
+    global p
+    p = message.text
+    if comm_assim == '/delete_heat':
+        num = bot.send_message(message.chat.id, 'Укажите температуру приточного воздуха в ºС')
+        bot.register_next_step_handler(num, delta_second)
+    elif comm_assim == '/delete_water':
+        num = bot.send_message(message.chat.id, 'Укажите влагосодержание приточного воздуха г/кг')
+        bot.register_next_step_handler(num, delta_second)
+
+def delta_second(message):
+    global t1
+    t1 = message.text
+    if comm_assim == '/delete_heat':
+        num = bot.send_message(message.chat.id, 'Укажите температуру удаляемого воздуха в ºС')
+        bot.register_next_step_handler(num, rash_assim)
+    elif comm_assim == '/delete_water':
+        num = bot.send_message(message.chat.id, 'Укажите влагосодержание удаляемого воздуха г/кг')
+        bot.register_next_step_handler(num, rash_assim)
+
+def rash_assim(message):
+    assimialtion_thermo_and_cool.assimilation(message, Q, t1, p, comm_assim)
+
+
+
+
+
+#Расчет количества теплоты и холода для обработки воздуха
+@bot.message_handler(commands=['heat', 'cool'])
+def heat_and_cool(message):
+    global comm
+    comm = message.text
+    num = bot.send_message(message.chat.id, 'Укажите расход воздуха в м3/час')
+    bot.register_next_step_handler(num, plotnost)
+
+def plotnost(message):
+    global L
+    L = message.text
+    plot = bot.send_message(message.chat.id, 'Укажите плотность воздуха в кг/м3')
+    bot.register_next_step_handler(plot, delta)
+
+def delta(message):
+    global p
+    p = message.text
+    thermo = bot.send_message(message.chat.id, 'Укажите разность температур в К 😊')
+    bot.register_next_step_handler(thermo, rash)
+
+def rash(message):
+    assimialtion_thermo_and_cool.thermo_cool(message, L, p, comm)
 
 
 
@@ -64,13 +137,14 @@ def round_3(message):
     calculation.scorost(message, F)
 
 
+
+
+
 #Расчет скорости воздуха и расход в прямоугольном воздуховоде
 @bot.message_handler(commands=['rectangle', 'rectangle_1'])
-def comm(message):
+def rectangle_1(message):
     global com
     com = message.text
-    rectangle_1(message)
-def rectangle_1(message):
     num = bot.send_message(message.chat.id, 'Введите ширину воздуховода в мм')
     bot.register_next_step_handler(num, rectangle_2)
 
