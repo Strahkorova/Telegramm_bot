@@ -123,18 +123,30 @@ def rash(message):
 
 
 #Расчет скорости воздуха в круглом воздуховоде
-@bot.message_handler(commands=['round'])
+@bot.message_handler(commands=['round', 'round_1'])
+def comm(message):
+    global com
+    com = message.text
+    round_1(message)
 def round_1(message):
     num = bot.send_message(message.chat.id, 'Введите диаметр воздуховода в мм')
     bot.register_next_step_handler(num, round_2)
 def round_2(message):
     global D
     D = message.text
-    operu = bot.send_message(message.chat.id, 'Укажите расход воздуха в м3/час')
-    bot.register_next_step_handler(operu, round_3)
+    if comm == '/round':
+        operu = bot.send_message(message.chat.id, 'Укажите расход воздуха в м3/час')
+        bot.register_next_step_handler(operu, round_3)
+    elif comm == '/round_1':
+        operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с')
+        bot.register_next_step_handler(operu, round_3)
+
 def round_3(message):
     F = (3.14 * (float(D)/1000) ** 2) / 4
-    calculation.scorost(message, F)
+    if com == '/round':
+        calculation.scorost(message, F)
+    elif com == '/round_1':
+        calculation.rashod(message, F)
 
 
 
