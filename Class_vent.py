@@ -8,6 +8,11 @@ but_ventilation.row(telebot.types.InlineKeyboardButton('Площадь возд�
 but_ventilation.row(telebot.types.InlineKeyboardButton('Расход воздуха от скорости и сечения', callback_data='vent-3'))
 but_ventilation.row(telebot.types.InlineKeyboardButton('Кол-во тепла для нагрева или охлаждения воздуха', callback_data='vent-4'))
 but_ventilation.row(telebot.types.InlineKeyboardButton('Ассимиляция тепло - и влагоизбытков', callback_data='vent-5'))
+but_ventilation.row(telebot.types.InlineKeyboardButton('Расчет дефлектора типа ЦАГИ', callback_data='vent-6'))
+
+
+but_heat_cool = telebot.types.InlineKeyboardMarkup()
+
 
 
 class calculation:
@@ -16,20 +21,23 @@ class calculation:
     def scorost(message, F):
         global L
         L = message.text.replace(',', '.')
-        val = float(L) / (float(F) * 3600)
-        bot.send_message(message.chat.id, (f'Скорость в воздуховоде равна - {round(val, 1)} м/с'))
         try:
-            global H
+            val = float(L) / (float(F) * 3600)
+            bot.send_message(message.chat.id, (f'Скорость в воздуховоде равна - {round(val, 1)} м/с'))
         except:
             bot.send_message(message.chat.id, "ошибка ведите /start")
 
     # Расчет площади воздуховода
-    def ploshad(message, L):
+    def ploshad_and_CAGI(message, L, cag):
         global v
-        v = message.text
+        v = message.text.replace(',', '.')
         try:
-            F = float(L) / (float(v) * 3600)
-            bot.send_message(message.chat.id, (f'Площадь воздуховода равна - {round(F, 5)} м2'))
+            if cag == 'vent-2':
+                F = float(L) / (float(v) * 3600)
+                bot.send_message(message.chat.id, (f'Площадь воздуховода равна - {round(F, 5)} м2'))
+            elif cag == 'vent-6':
+                Do = (0.0188 * ((float(L)/(float(v)))**0.5))*1000
+                bot.send_message(message.chat.id, (f'Диаметр подводящего патрубка дефлектора типа ЦАГИ - {round(Do, 0)} мм'))
         except:
             bot.send_message(message.chat.id, "ошибка ведите /start")
 

@@ -12,13 +12,13 @@ def start(mess):
     markup = types.ReplyKeyboardMarkup()
     btn1 = types.KeyboardButton('/Вентиляция')
     btn2 = types.KeyboardButton('/Тепло- и Холодснабжение')
-    btn3 = types.KeyboardButton('/Отопление')
     btn3 = types.KeyboardButton('/Холодильная машина')
     btn4 = types.KeyboardButton('/Отмена')
     markup.row(btn1)
     markup.row(btn2, btn3)
     markup.row(btn4)
-    bot.send_message(mess.chat.id, f'Привет послушник, {mess.from_user.first_name}!', reply_markup= markup)
+    bot.send_message(mess.chat.id, f'Привет юный падаван, {mess.from_user.first_name}! '
+                                   f'Мудрость от Йоды "Светлая сторона силы путь верный к могуществу инженера!" Да прибудет с тобой сила!', reply_markup= markup)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -26,7 +26,9 @@ def callback_worker(call):
     if call.data == "vent-1":
         bot.edit_message_text(f'Необходимо выбрать тип воздуховода:\n Круглый - /round \n Прямоугольный - /rectangle',
             call.message.chat.id, call.message.message_id, parse_mode='html')
-    elif call.data == "vent-2":
+    elif call.data == "vent-2" or "vent-6":
+        global cagi
+        cagi = call.data
         num = bot.send_message(call.message.chat.id, 'Укажите расход воздуха в м3/час')
         bot.register_next_step_handler(num, scor_1)
     elif call.data == "vent-3":
@@ -36,18 +38,27 @@ def callback_worker(call):
         bot.edit_message_text(f'Необходимо выбрать вид обработки воздуховода:\n Нагрев - /heat \n Охлаждение - /cool',
             call.message.chat.id, call.message.message_id, parse_mode='html')
     elif call.data == "vent-5":
-        bot.edit_message_text(f'Необходимо выбрать цель ассимиляции:\n Удавление теплоты - /delete_heat \n Удавление влаги - /delete_water',
+        bot.edit_message_text(f'Необходимо выбрать цель ассимиляции:\n Удаление теплоты - /delete_heat \n Удаление влаги - /delete_water',
             call.message.chat.id, call.message.message_id, parse_mode='html')
 
 
-#Расчет площади сечения воздуховода
+
+#Расчет площади сечения воздуховода и размера дефлектора ЦАГИ
 def scor_1(message):
     global L
     L = message.text.replace(',', '.')
-    operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с')
-    bot.register_next_step_handler(operu, scor_2)
+    if cagi == 'vent-2':
+        operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с')
+        bot.register_next_step_handler(operu, scor_2)
+    elif cagi == 'vent-6':
+        operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с, ВАЖНО: принимать равной половине скорости ветра согласно СП "Строительная климатология"!')
+        bot.register_next_step_handler(operu, scor_2)
+
 def scor_2(message):
-    calculation.ploshad(message, L)
+    calculation.ploshad_and_CAGI(message, L, cagi)
+
+
+
 
 #ассимиляция тепло- и влагоизбытков
 @bot.message_handler(commands=['delete_heat', 'delete_water'])
@@ -195,7 +206,7 @@ def rectangle_4(message):
 
 @bot.message_handler(commands=['Вентиляция'])
 def ventil(message):
-    bot.send_message(message.chat.id, 'Выберите функции для расчета в разделе вентиляция', reply_markup=Class_vent.but_ventilation )
+    bot.send_message(message.chat.id, 'Раздел вентиляция выбрал(а) ты! Верный выбор, путь к верным расчетам! 🖖', reply_markup=Class_vent.but_ventilation )
 
 
 
