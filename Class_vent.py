@@ -15,10 +15,11 @@ class calculation:
     #Расчет скосроти воздуха в воздуховоде
     def scorost(message, F):
         global L
-        L = message.text
+        L = message.text.replace(',', '.')
+        val = float(L) / (float(F) * 3600)
+        bot.send_message(message.chat.id, (f'Скорость в воздуховоде равна - {round(val, 1)} м/с'))
         try:
-            val = float(L) / (float(F) * 3600)
-            bot.send_message(message.chat.id, (f'Скорость в воздуховоде равна - {round(val, 1)} м/с'))
+            global H
         except:
             bot.send_message(message.chat.id, "ошибка ведите /start")
 
@@ -35,7 +36,7 @@ class calculation:
     #Расчет объекмного расхода воздуха
     def rashod(message, F):
         global v
-        v = message.text
+        v = message.text.replace(',', '.')
         try:
             L = (float(F) * (float(v) * 3600))
             bot.send_message(message.chat.id, (f'Расход воздуха равен - {round(L, 5)} м3/час'))
@@ -45,9 +46,10 @@ class calculation:
 
 class assimialtion_thermo_and_cool:
 
+    #Расчет количества теплоты или холода для обработки воздуха
     def thermo_cool(message, L, p, comm):
         global dt
-        dt = message.text
+        dt = message.text.replace(',', '.')
         try:
             Q = (float(L) * float(p) * 1.005 * float(dt))/3600
             if comm == '/heat':
@@ -57,9 +59,10 @@ class assimialtion_thermo_and_cool:
         except:
             bot.send_message(message.chat.id, "ошибка ведите /start")
 
+    #Расход воздуха на ассимиляцию тепло- и влагоизбытков
     def assimilation(message, Q, t1, p, comm):
         global dt
-        dt= message.text
+        dt= message.text.replace(',', '.')
         if comm == '/delete_heat':
             L = (float(Q)*3600)/(float(p)*1.005*(float(dt) - float(t1)))
             bot.send_message(message.chat.id, (f'Вам {message.from_user.first_name} необходимо - {round(L, 2)} м3/час для удавления {Q} кВт теплоты! 🥵'))
