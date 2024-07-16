@@ -3,6 +3,7 @@ from telebot import types
 from Class_vent import calculation, assimialtion_thermo_and_cool, thermo_refrigeration
 import Class_vent
 
+
 bot = telebot.TeleBot('7336100479:AAE_KgTsKoCwMe1rctfOIDtfw0HgOnLzk4E')
 
 
@@ -26,7 +27,7 @@ def callback_worker(call):
     if call.data == "vent-1":
         bot.edit_message_text(f'Необходимо выбрать тип воздуховода:\n Круглый - /round \n Прямоугольный - /rectangle',
             call.message.chat.id, call.message.message_id, parse_mode='html')
-    elif call.data == "vent-2":
+    elif call.data == "vent-2" or call.data == "vent-6":
         global cagi
         cagi = call.data
         num = bot.send_message(call.message.chat.id, 'Укажите расход воздуха в м3/час')
@@ -40,7 +41,7 @@ def callback_worker(call):
     elif call.data == "vent-5":
         bot.edit_message_text(f'Необходимо выбрать цель ассимиляции:\n Удаление теплоты - /delete_heat \n Удаление влаги - /delete_water',
             call.message.chat.id, call.message.message_id, parse_mode='html')
-    elif call.data == 'heco-1' or 'heco-2':
+    elif call.data == 'heco-1' or call.data == 'heco-2':
         global name_command_water
         name_command_water = call.data
         bot.edit_message_text(f'Необходимо выбрать тип теплоносителя:\n Вода - /water \n Гликоль - /antifriz',
@@ -267,16 +268,5 @@ def refrigeration(message):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 bot.polling(non_stop=True)
+
