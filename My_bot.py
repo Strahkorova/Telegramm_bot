@@ -1,6 +1,6 @@
 import telebot
 from telebot import types
-from Class_vent import calculation, assimialtion_thermo_and_cool
+from Class_vent import calculation, assimialtion_thermo_and_cool, thermo_refrigeration
 import Class_vent
 
 bot = telebot.TeleBot('7336100479:AAE_KgTsKoCwMe1rctfOIDtfw0HgOnLzk4E')
@@ -11,8 +11,8 @@ bot = telebot.TeleBot('7336100479:AAE_KgTsKoCwMe1rctfOIDtfw0HgOnLzk4E')
 def start(mess):
     markup = types.ReplyKeyboardMarkup()
     btn1 = types.KeyboardButton('/Вентиляция')
-    btn2 = types.KeyboardButton('/Тепло- и Холодснабжение')
-    btn3 = types.KeyboardButton('/Холодильная машина')
+    btn2 = types.KeyboardButton('/Тепло-и_Холодоснабжение')
+    btn3 = types.KeyboardButton('/Холодильная_машина')
     btn4 = types.KeyboardButton('/Отмена')
     markup.row(btn1)
     markup.row(btn2, btn3)
@@ -26,7 +26,7 @@ def callback_worker(call):
     if call.data == "vent-1":
         bot.edit_message_text(f'Необходимо выбрать тип воздуховода:\n Круглый - /round \n Прямоугольный - /rectangle',
             call.message.chat.id, call.message.message_id, parse_mode='html')
-    elif call.data == "vent-2" or "vent-6":
+    elif call.data == "vent-2":
         global cagi
         cagi = call.data
         num = bot.send_message(call.message.chat.id, 'Укажите расход воздуха в м3/час')
@@ -39,6 +39,11 @@ def callback_worker(call):
             call.message.chat.id, call.message.message_id, parse_mode='html')
     elif call.data == "vent-5":
         bot.edit_message_text(f'Необходимо выбрать цель ассимиляции:\n Удаление теплоты - /delete_heat \n Удаление влаги - /delete_water',
+            call.message.chat.id, call.message.message_id, parse_mode='html')
+    elif call.data == 'heco-1' or 'heco-2':
+        global name_command_water
+        name_command_water = call.data
+        bot.edit_message_text(f'Необходимо выбрать тип теплоносителя:\n Вода - /water \n Гликоль - /antifriz',
             call.message.chat.id, call.message.message_id, parse_mode='html')
 
 
@@ -56,6 +61,47 @@ def scor_1(message):
 
 def scor_2(message):
     calculation.ploshad_and_CAGI(message, L, cagi)
+
+
+########################################################################################################
+
+#Расчет расхода и скорости теплоносителя в трубе
+@bot.message_handler(commands=['water', 'antifriz'])
+def open_thermo(message):
+    global comm_water
+    comm_water = message.text
+    if name_command_water == 'heco-1':
+        num = bot.send_message(message.chat.id, 'Укажите тепловую нагрузку, переносимую теплоносителем в кВт')
+        bot.register_next_step_handler(num, teplo_water)
+    elif name_command_water == 'heco-2':
+        num = bot.send_message(message.chat.id, 'Укажите расход теплоносителя в кг/с')
+        bot.register_next_step_handler(num, plotnost_assim)
+
+
+def teplo_water(message):
+    global Q
+    Q = message.text.replace(',', '.')
+    plot = bot.send_message(message.chat.id, 'Укажите разность температур по воде, ℉')
+    if comm_water == '/water':
+        bot.register_next_step_handler(plot, rashet_rashod_water)
+    elif comm_water == '/antifriz':
+        bot.register_next_step_handler(plot, teploemkost)
+
+
+def teploemkost(message):
+    global dt
+    dt = message.text.replace(',', '.')
+    plot = bot.send_message(message.chat.id, 'Укажите удельную теплоемкость гликоля, кДж/(кг*℃)')
+    bot.register_next_step_handler(plot, rashet_rashod_water)
+
+
+def rashet_rashod_water(message):
+    dt = message.text.replace(',', '.')
+    thermo_refrigeration.rashod_teplonositel(message, Q, dt, comm_water)
+
+
+
+
 
 
 
@@ -82,7 +128,7 @@ def delta_first(message):
     global p
     p = message.text.replace(',', '.')
     if comm_assim == '/delete_heat':
-        num = bot.send_message(message.chat.id, 'Укажите температуру приточного воздуха в ºС')
+        num = bot.send_message(message.chat.id, 'Укажите температуру приточного воздуха в ℃')
         bot.register_next_step_handler(num, delta_second)
     elif comm_assim == '/delete_water':
         num = bot.send_message(message.chat.id, 'Укажите влагосодержание приточного воздуха г/кг')
@@ -92,7 +138,7 @@ def delta_second(message):
     global t1
     t1 = message.text.replace(',', '.')
     if comm_assim == '/delete_heat':
-        num = bot.send_message(message.chat.id, 'Укажите температуру удаляемого воздуха в ºС')
+        num = bot.send_message(message.chat.id, 'Укажите температуру удаляемого воздуха в ℃')
         bot.register_next_step_handler(num, rash_assim)
     elif comm_assim == '/delete_water':
         num = bot.send_message(message.chat.id, 'Укажите влагосодержание удаляемого воздуха г/кг')
@@ -100,9 +146,6 @@ def delta_second(message):
 
 def rash_assim(message):
     assimialtion_thermo_and_cool.assimilation(message, Q, t1, p, comm_assim)
-
-
-
 
 
 #Расчет количества теплоты и холода для обработки воздуха
@@ -122,12 +165,11 @@ def plotnost(message):
 def delta(message):
     global p
     p = message.text.replace(',', '.')
-    thermo = bot.send_message(message.chat.id, 'Укажите разность температур в К 😊')
+    thermo = bot.send_message(message.chat.id, 'Укажите разность температур по воздуху в ℃')
     bot.register_next_step_handler(thermo, rash)
 
 def rash(message):
     assimialtion_thermo_and_cool.thermo_cool(message, L, p, heatcool)
-
 
 
 #Расчет скорости воздуха и расход в круглом воздуховоде
@@ -154,9 +196,6 @@ def round_3(message):
         calculation.scorost(message, F)
     elif round_com == '/round_1':
         calculation.rashod(message, F)
-
-
-
 
 
 #Расчет скорости воздуха и расход в прямоугольном воздуховоде
@@ -198,18 +237,23 @@ def rectangle_4(message):
 
 
 
-
-
-
-
+################################################################################################
 
 
 @bot.message_handler(commands=['Вентиляция'])
 def ventil(message):
-    bot.send_message(message.chat.id, 'Раздел вентиляция выбрал(а) ты! Верный выбор, путь к верным расчетам! 🖖', reply_markup=Class_vent.but_ventilation )
+    bot.send_message(message.chat.id, 'Раздел вентиляция выбрал(а) ты! Верный выбор, путь к верным расчетам! 🖖', reply_markup=Class_vent.but_ventilation)
 
 
+@bot.message_handler(commands=['Тепло-и_Холодоснабжение'])
+def thermo_cooling(message):
+    bot.send_message(message.chat.id, f'Раздел Тепло- и Холодоснабжение выбрал(а) ты! Не используй силу, {message.from_user.first_name}, используй мозг! 🙂', reply_markup= Class_vent.but_heat_cool)
 
+
+@bot.message_handler(commands=['Холодильная_машина'])
+def refrigeration(message):
+    bot.send_message(message.chat.id, f'Раздел Холодильная машина выбрал(а) ты! Страх доступ открывает к тёмной стороне. '
+                                      f'Страх рождает гнев, гнев рождает ненависть, ненависть — залог страданий ! 🙂', reply_markup= Class_vent.but_holod)
 
 
 
