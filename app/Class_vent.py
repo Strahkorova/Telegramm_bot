@@ -1,28 +1,6 @@
 import telebot
-
-
-bot = telebot.TeleBot('7336100479:AAE_KgTsKoCwMe1rctfOIDtfw0HgOnLzk4E')
-
-but_ventilation = telebot.types.InlineKeyboardMarkup()
-but_ventilation.row(telebot.types.InlineKeyboardButton('Скорость воздуха в воздуховоде', callback_data='vent-1'))
-but_ventilation.row(telebot.types.InlineKeyboardButton('Площадь воздуховода от скорости', callback_data='vent-2'))
-but_ventilation.row(telebot.types.InlineKeyboardButton('Расход воздуха от скорости и сечения', callback_data='vent-3'))
-but_ventilation.row(telebot.types.InlineKeyboardButton('Кол-во тепла для нагрева или охлаждения воздуха', callback_data='vent-4'))
-but_ventilation.row(telebot.types.InlineKeyboardButton('Ассимиляция тепло - и влагоизбытков', callback_data='vent-5'))
-but_ventilation.row(telebot.types.InlineKeyboardButton('Подбор дефлектора типа ЦАГИ', callback_data='vent-6'))
-but_ventilation.row(telebot.types.InlineKeyboardButton('Свойства воздуха', callback_data='vent-7'))
-
-but_heat_cool = telebot.types.InlineKeyboardMarkup()
-but_heat_cool.row(telebot.types.InlineKeyboardButton('Расход теплоносителя', callback_data='heco-1'))
-but_heat_cool.row(telebot.types.InlineKeyboardButton('Скорость теплоносителя от диаметра', callback_data='heco-2'))
-but_heat_cool.row(telebot.types.InlineKeyboardButton('Расчет Kvs арматуры', callback_data='heco-3'))
-but_heat_cool.row(telebot.types.InlineKeyboardButton('Подбор объема мембранного РБ', callback_data='heco-4'))
-but_heat_cool.row(telebot.types.InlineKeyboardButton('Коэффициент теплопередачи', callback_data='heco-5'))
-
-but_holod = telebot.types.InlineKeyboardMarkup()
-but_holod.row(telebot.types.InlineKeyboardButton('Холодильный коэффициент', callback_data='holod-1'))
-but_holod.row(telebot.types.InlineKeyboardButton('Колличество теплоты конденсации', callback_data='holod-2'))
-
+import prettytable as pt
+from config import bot
 
 class calculation:
 
@@ -45,7 +23,7 @@ class calculation:
                 F = float(L) / (float(v) * 3600)
                 bot.send_message(message.chat.id, (f'Площадь воздуховода равна - {round(F, 5)} м2'))
             elif cagi == 'vent-6':
-                Do =  0.0188 * ((float(L) / (float(v))) ** 0.5)*1000
+                Do = 0.0188 * ((float(L) / (float(v))) ** 0.5) * 1000
                 bot.send_message(message.chat.id, (f'Рекомендуемый диаметр дифлектора типа ЦАГИ - {round(Do, 0)} мм'))
         except:
             bot.send_message(message.chat.id, "ошибка ведите /start")
@@ -60,6 +38,7 @@ class calculation:
         except:
             bot.send_message(message.chat.id, "ошибка ведите /start")
 
+
 class assimialtion_thermo_and_cool:
 
     #Расчет количества теплоты или холода для обработки воздуха
@@ -67,34 +46,70 @@ class assimialtion_thermo_and_cool:
         global dt
         dt = message.text.replace(',', '.')
         try:
-            Q = (float(L) * float(p) * 1.005 * float(dt))/3600
+            Q = (float(L) * float(p) * 1.005 * float(dt)) / 3600
             if comm == '/heat':
-                bot.send_message(message.chat.id, (f'Вам {message.from_user.first_name} необходимо - {round(Q, 2)} кВт для нагрева воздуха! 🥵'))
+                bot.send_message(message.chat.id, (
+                    f'Вам {message.from_user.first_name} необходимо - {round(Q, 2)} кВт для нагрева воздуха! 🥵'))
             elif comm == '/cool':
-                bot.send_message(message.chat.id, (f'Вам {message.from_user.first_name} необходимо - {round(Q, 2)} кВт для охлаждения воздуха! 🥶'))
+                bot.send_message(message.chat.id, (
+                    f'Вам {message.from_user.first_name} необходимо - {round(Q, 2)} кВт для охлаждения воздуха! 🥶'))
         except:
             bot.send_message(message.chat.id, "ошибка ведите /start")
 
     #Расход воздуха на ассимиляцию тепло- и влагоизбытков
     def assimilation(message, Q, t1, p, comm):
         global dt
-        dt= message.text.replace(',', '.')
+        dt = message.text.replace(',', '.')
         if comm == '/delete_heat':
-            L = (float(Q)*3600)/(float(p)*1.005*(float(dt) - float(t1)))
-            bot.send_message(message.chat.id, (f'Вам {message.from_user.first_name} необходимо - {round(L, 2)} м3/час для удавления {Q} кВт теплоты! 🥵'))
+            L = (float(Q) * 3600) / (float(p) * 1.005 * (float(dt) - float(t1)))
+            bot.send_message(message.chat.id, (
+                f'Вам {message.from_user.first_name} необходимо - {round(L, 2)} м3/час для удавления {Q} кВт теплоты! 🥵'))
         elif comm == '/delete_water':
-            L = float(Q)/((float(dt)-float(t1))*float(p))
-            bot.send_message(message.chat.id, (f'Вам {message.from_user.first_name} необходимо - {round(L, 2)} м3/час для удавления {Q} г/час влаги! 🐳'))
+            L = float(Q) / ((float(dt) - float(t1)) * float(p))
+            bot.send_message(message.chat.id, (
+                f'Вам {message.from_user.first_name} необходимо - {round(L, 2)} м3/час для удавления {Q} г/час влаги! 🐳'))
+
 
 class thermo_refrigeration:
 
-#Определение расхода теплоносителя
+    #Определение расхода теплоносителя
     def rashod_teplonositel(message, Q, dt, name):
-
         if name == '/water':
-            G = float(Q)/(4.18*float(dt))
+            G = float(Q) / (4.18 * float(dt))
             bot.send_message(message.chat.id, (f'Массовый расход воды в системе равен - {round(G, 3)} кг/с'))
         elif name == '/antifriz':
             cp = message.text.replace(',', '.')
             G = float(Q) / (float(cp) * float(dt))
             bot.send_message(message.chat.id, (f'Массовый расход антифриз в системе равен - {round(G, 3)} кг/с'))
+
+    def scorost_teplonositel(message, G, type_tube):
+        data = []
+        pw = message.text.replace(',', '.')
+
+        plastic = {'20x3,4': 0.0001367, '25x4,2': 0.0002164, '32x5,4': 0.0003529, '40x6,7': 0.0005557,
+                   '50x8,3': 0.0008761, '63x10,5': 0.001385, '75x12,5': 0.001963, '90x15': 0.002827}
+
+        steel = {'20x2,8': 0.0001627, '25x2,8': 0.0002954, '32x2,8': 0.0005471, '40x3,0': 0.0009074,
+                 '57x3,5': 0.001962, '76x3,5': 0.003737, '89x3,5': 0.005278, '108x4,0': 0.00785,
+                 '133x4,5': 0.01207, '159x5,0': 0.01742, '219x6,0': 0.03428}
+
+        cuprum = {'8x1,0': 0.00002826, '10x1,0': 0.00005024, '11x1,5': 0.00005024, '12x2,0': 0.00005024,
+                  '13x1,5': 0.0000785, '13x2,0': 0.00006358, '26x2,0': 0.0003799, '45x3,0': 0.001194, '50x3,0': 0.001519}
+
+        if type_tube == '/plastic':
+            thermo_refrigeration.tube_scorost(message, G, pw, plastic, data)
+        elif type_tube == '/steel':
+            thermo_refrigeration.tube_scorost(message, G, pw, steel, data)
+        elif type_tube == '/cuprum':
+            thermo_refrigeration.tube_scorost(message, G, pw, cuprum, data)
+
+    def tube_scorost(message, G, pw, list, data):
+        for tube, place in list.items():
+            v = float(G) / (float(pw) * place)
+            tube_scor = (tube, place, v)
+            data.append(tube_scor)
+
+        table = pt.PrettyTable(['Труба, мм', 'Живое сечение, м2', 'Скорость, м/с'])
+        for tube, place, speed in data:
+            table.add_row([tube, f'{place:.5f}', f'{speed:.3f}'])
+        bot.send_message(message.chat.id, f'<pre>{table}</pre>', parse_mode='html')

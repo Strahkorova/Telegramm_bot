@@ -2,6 +2,7 @@ from config import bot
 from telebot import types
 from Class_vent import calculation, assimialtion_thermo_and_cool, thermo_refrigeration
 import Class_vent
+import dialogs
 from dialogs import Messages
 
 
@@ -38,10 +39,11 @@ def callback_worker(call):
     elif call.data == "vent-5":
         bot.edit_message_text(f'Необходимо выбрать цель ассимиляции:\n Удаление теплоты - /delete_heat \n Удаление влаги - /delete_water',
             call.message.chat.id, call.message.message_id, parse_mode='html')
-    elif call.data == 'heco-1' or call.data == 'heco-2':
-        global name_command_water
-        name_command_water = call.data
+    elif call.data == 'heco-1':
         bot.edit_message_text(f'Необходимо выбрать тип теплоносителя:\n Вода - /water \n Гликоль - /antifriz',
+            call.message.chat.id, call.message.message_id, parse_mode='html')
+    elif call.data == 'heco-2':
+        bot.edit_message_text(f'Необходимо выбрать тип трубы:\n Пластик PN25 - /plastic \n Сталь - /steel \n Медь - /cuprum',
             call.message.chat.id, call.message.message_id, parse_mode='html')
 
 
@@ -64,17 +66,16 @@ def scor_2(message):
 ########################################################################################################
 
 #Расчет расхода и скорости теплоносителя в трубе
-@bot.message_handler(commands=['water', 'antifriz'])
+@bot.message_handler(commands=['water', 'antifriz', 'plastic', 'steel', 'cuprum'])
 def open_thermo(message):
     global comm_water
     comm_water = message.text
-    if name_command_water == 'heco-1':
+    if comm_water == 'water' or comm_water == 'antifriz':
         num = bot.send_message(message.chat.id, 'Укажите тепловую нагрузку, переносимую теплоносителем в кВт')
         bot.register_next_step_handler(num, teplo_water)
-    elif name_command_water == 'heco-2':
+    else:
         num = bot.send_message(message.chat.id, 'Укажите расход теплоносителя в кг/с')
-        bot.register_next_step_handler(num, plotnost_assim)
-
+        bot.register_next_step_handler(num, plotnost_water)
 
 def teplo_water(message):
     global Q
@@ -85,17 +86,25 @@ def teplo_water(message):
     elif comm_water == '/antifriz':
         bot.register_next_step_handler(plot, teploemkost)
 
-
 def teploemkost(message):
     global dt
     dt = message.text.replace(',', '.')
     plot = bot.send_message(message.chat.id, 'Укажите удельную теплоемкость гликоля, кДж/(кг*℃)')
     bot.register_next_step_handler(plot, rashet_rashod_water)
 
+def plotnost_water(message):
+    global Gw
+    Gw = message.text.replace(',', '.')
+    plot = bot.send_message(message.chat.id, 'Укажите плотность теплоносителя, кг/м3')
+    bot.register_next_step_handler(plot, rashet_rashod_water)
 
 def rashet_rashod_water(message):
     dt = message.text.replace(',', '.')
-    thermo_refrigeration.rashod_teplonositel(message, Q, dt, comm_water)
+    if comm_water == 'water' or comm_water == 'antifriz':
+        thermo_refrigeration.rashod_teplonositel(message, Q, dt, comm_water)
+    else:
+        thermo_refrigeration.scorost_teplonositel(message, Gw, comm_water)
+
 
 
 
@@ -240,18 +249,15 @@ def rectangle_4(message):
 
 @bot.message_handler(commands=['Вентиляция'])
 def ventil(message):
-    bot.send_message(message.chat.id, 'Раздел вентиляция выбрал(а) ты! Верный выбор, путь к верным расчетам! 🖖', reply_markup=Class_vent.but_ventilation)
-
+    bot.send_message(message.chat.id, Messages.ventilation(message), reply_markup=dialogs.but_ventilation)
 
 @bot.message_handler(commands=['Тепло-и_Холодоснабжение'])
 def thermo_cooling(message):
-    bot.send_message(message.chat.id, f'Раздел Тепло- и Холодоснабжение выбрал(а) ты! Не используй силу, {message.from_user.first_name}, используй мозг! 🙂', reply_markup= Class_vent.but_heat_cool)
-
+    bot.send_message(message.chat.id, Messages.thermocooling(message), reply_markup= dialogs.but_heat_cool)
 
 @bot.message_handler(commands=['Холодильная_машина'])
 def refrigeration(message):
-    bot.send_message(message.chat.id, f'Раздел Холодильная машина выбрал(а) ты! Страх доступ открывает к тёмной стороне. '
-                                      f'Страх рождает гнев, гнев рождает ненависть, ненависть — залог страданий ! 🙂', reply_markup= Class_vent.but_holod)
+    bot.send_message(message.chat.id, Messages.refrigirating(message), reply_markup= dialogs.but_holod)
 
 
 
