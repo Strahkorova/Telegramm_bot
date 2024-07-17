@@ -1,10 +1,8 @@
-import telebot
+from config import bot
 from telebot import types
 from Class_vent import calculation, assimialtion_thermo_and_cool, thermo_refrigeration
 import Class_vent
-
-
-bot = telebot.TeleBot('7336100479:AAE_KgTsKoCwMe1rctfOIDtfw0HgOnLzk4E')
+from dialogs import Messages
 
 
 @bot.message_handler(commands=['start'])
@@ -18,8 +16,7 @@ def start(mess):
     markup.row(btn1)
     markup.row(btn2, btn3)
     markup.row(btn4)
-    bot.send_message(mess.chat.id, f'Привет юный падаван, {mess.from_user.first_name}! '
-                                   f'Мудрость от Йоды "Светлая сторона силы путь верный к могуществу инженера!" Да прибудет с тобой сила!', reply_markup= markup)
+    bot.send_message(mess.chat.id, Messages.start(mess), reply_markup=markup)
 
 
 @bot.callback_query_handler(func=lambda call: True)
