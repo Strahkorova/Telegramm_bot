@@ -45,7 +45,24 @@ def callback_worker(call):
     elif call.data == 'heco-2':
         bot.edit_message_text(f'Необходимо выбрать тип трубы:\n Пластик PN25 - /plastic \n Сталь - /steel \n Медь - /cuprum',
             call.message.chat.id, call.message.message_id, parse_mode='html')
+    elif call.data == 'heco-3':
+        num = bot.send_message(call.message.chat.id, 'Укажите расход теплоносителя, в м3/час')
+        bot.register_next_step_handler(num, regulation)
 
+
+#Расчет значений Kvs для регулирующей арматуры
+def regulation(message):
+    global Gvs
+    Gvs = message.text.replace(',', '.')
+    presure = bot.send_message(message.chat.id, 'Укажите потери давления в гидравлической сети, Бар')
+    bot.register_next_step_handler(presure, Kvs_system)
+
+def Kvs_system(message):
+    global dP
+    dP = message.text.replace(',', '.')
+    K = (1.1*float(Gvs))/(float(dP)**0.5)
+    bot.send_message(message.chat.id, (
+        f'Вам {message.from_user.first_name} необходимо - {round(K, 3)} м3/час пропускной способности регулирующего клапана! 😱'))
 
 
 #Расчет площади сечения воздуховода и размера дефлектора ЦАГИ
