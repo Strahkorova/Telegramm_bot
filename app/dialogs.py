@@ -18,8 +18,8 @@ but_heat_cool.row(telebot.types.InlineKeyboardButton('Расчет Kvs арма�
 but_heat_cool.row(telebot.types.InlineKeyboardButton('Коэффициент теплопередачи', callback_data='heco-4'))
 
 but_holod = telebot.types.InlineKeyboardMarkup()
-but_holod.row(telebot.types.InlineKeyboardButton('Холодильный коэффициент', callback_data='holod-1'))
-but_holod.row(telebot.types.InlineKeyboardButton('Колличество теплоты конденсации', callback_data='holod-2'))
+but_holod.row(telebot.types.InlineKeyboardButton('Свойства воздуха', callback_data='properties-1'))
+but_holod.row(telebot.types.InlineKeyboardButton('Конвертер величин', callback_data='properties-2'))
 
 
 @dataclass(frozen=True)
@@ -35,8 +35,8 @@ class Messages:
     def thermocooling(mess):
         return (f'Раздел Тепло- и Холодоснабжение выбрал(а) ты! Не используй силу, {mess.from_user.first_name}, используй мозг! 🙂')
 
-    def refrigirating(mess):
-        return (f'Раздел Холодильная машина выбрал(а) ты! Страх доступ открывает к тёмной стороне. Страх рождает гнев, гнев рождает ненависть, ненависть — залог страданий ! 🙂')
+    def properties(mess):
+        return (f'Раздел инструменты выбрал(а) ты! Страх доступ открывает к тёмной стороне. Страх рождает гнев, гнев рождает ненависть, ненависть — залог страданий ! 🙂')
 
 
 

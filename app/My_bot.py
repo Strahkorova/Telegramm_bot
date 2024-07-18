@@ -12,7 +12,7 @@ def start(mess):
     markup = types.ReplyKeyboardMarkup()
     btn1 = types.KeyboardButton('/Вентиляция')
     btn2 = types.KeyboardButton('/Тепло-и_Холодоснабжение')
-    btn3 = types.KeyboardButton('/Холодильная_машина')
+    btn3 = types.KeyboardButton('/Инструменты')
     btn4 = types.KeyboardButton('/Отмена')
     markup.row(btn1)
     markup.row(btn2, btn3)
@@ -87,7 +87,7 @@ def scor_2(message):
 def open_thermo(message):
     global comm_water
     comm_water = message.text
-    if comm_water == 'water' or comm_water == 'antifriz':
+    if comm_water == '/water' or comm_water == '/antifriz':
         num = bot.send_message(message.chat.id, 'Укажите тепловую нагрузку, переносимую теплоносителем в кВт')
         bot.register_next_step_handler(num, teplo_water)
     else:
@@ -117,7 +117,7 @@ def plotnost_water(message):
 
 def rashet_rashod_water(message):
     dt = message.text.replace(',', '.')
-    if comm_water == 'water' or comm_water == 'antifriz':
+    if comm_water == '/water' or comm_water == '/antifriz':
         thermo_refrigeration.rashod_teplonositel(message, Q, dt, comm_water)
     else:
         thermo_refrigeration.scorost_teplonositel(message, Gw, comm_water)
@@ -272,9 +272,9 @@ def ventil(message):
 def thermo_cooling(message):
     bot.send_message(message.chat.id, Messages.thermocooling(message), reply_markup= dialogs.but_heat_cool)
 
-@bot.message_handler(commands=['Холодильная_машина'])
+@bot.message_handler(commands=['Инструменты'])
 def refrigeration(message):
-    bot.send_message(message.chat.id, Messages.refrigirating(message), reply_markup= dialogs.but_holod)
+    bot.send_message(message.chat.id, Messages.properties(message), reply_markup= dialogs.but_holod)
 
 
 
