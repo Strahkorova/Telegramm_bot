@@ -52,7 +52,7 @@ def callback_worker(call):
         num = bot.send_message(call.message.chat.id, 'Укажите расход теплоносителя, в м3/час')
         bot.register_next_step_handler(num, regulation)
     elif call.data == 'properties-1':
-        bot.edit_message_text(f'Выберите тип ограждения:\n однослойное - /one_layer \n многослойное - /many_layers',
+        bot.edit_message_text(f'Какие коэффициенты теплоотдачи принять (только для нескольких слоев):\n по рекомендации - /one_layer \n пользовательские - /many_layers',
             call.message.chat.id, call.message.message_id, parse_mode='html')
 
 
@@ -89,9 +89,12 @@ def scor_2(message):
 ########################################################################################################
 
 @bot.message_handler(commands=['one_layer', 'many_layers'])
-def one_step(message):
+def zero_step(message):
     global layer
     layer = message.text
+    one_step(message)
+
+def one_step(message):
     num = bot.send_message(message.chat.id, 'Укажите толщину слоя в мм')
     bot.register_next_step_handler(num, two_step)
 
@@ -117,11 +120,26 @@ def four_step(message):
             tools.teploperedacha(message, teploprovodnost, tolshina)
         else:
             koeff_thermo[tolshina] = teploprovodnost
-            tools.koeff_teplo(message, koeff_thermo)
-            koeff_thermo.clear()
+            if layer == '/many_layers':
+                num = bot.send_message(message.chat.id, 'Укажите коэффициент теплоотдачи для первого вещества в Вт/(м²*К)')
+                bot.register_next_step_handler(num, five_step)
+            elif layer == '/one_layer':
+                tools.koeff_teplo(message, koeff_thermo, 8, 21)
+                koeff_thermo.clear()
     elif yes_no == '/Yes':
         koeff_thermo[tolshina] = teploprovodnost
         one_step(message)
+
+def five_step(message):
+    global alfa1
+    alfa1 = message.text.replace(',', '.')
+    num = bot.send_message(message.chat.id, 'Укажите коэффициент теплоотдачи для второго вещества в Вт/(м²*К)')
+    bot.register_next_step_handler(num, six_step)
+
+def six_step(message):
+    global alfa2
+    alfa2 = message.text.replace(',', '.')
+    tools.koeff_teplo(message, koeff_thermo, alfa1, alfa2)
 
 
 

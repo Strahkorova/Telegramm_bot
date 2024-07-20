@@ -121,9 +121,7 @@ class tools:
         k = 1/((1/8)+(float(tolshina)/1000) / float(teploprov)+(1/21))
         bot.send_message(message.chat.id, f'Коэффициент теплопередачи однослойной ограждающей стенки равен - {round(k, 3)} Вт/(м2*К)')
 
-
-
-    def koeff_teplo(message, dicty):
+    def koeff_teplo(message, dicty, a1, a2):
         data = []
         list_R = []
         n = 1
@@ -136,7 +134,7 @@ class tools:
             n +=1
 
         SR = sum(list_R)
-        k = 1/((1/8)+SR+(1/21))
+        k = 1/((1/float(a1))+SR+(1/float(a2)))
 
         table = pt.PrettyTable(['Слой', 'Толщина, мм', 'ʎ, Вт/(м2*К)', 'R, Вт/(м2*К)'])
         for n, b, v, r in data:
