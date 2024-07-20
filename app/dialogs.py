@@ -15,10 +15,10 @@ but_heat_cool = telebot.types.InlineKeyboardMarkup()
 but_heat_cool.row(telebot.types.InlineKeyboardButton('Расход теплоносителя', callback_data='heco-1'))
 but_heat_cool.row(telebot.types.InlineKeyboardButton('Скорость теплоносителя от диаметра', callback_data='heco-2'))
 but_heat_cool.row(telebot.types.InlineKeyboardButton('Расчет Kvs арматуры', callback_data='heco-3'))
-but_heat_cool.row(telebot.types.InlineKeyboardButton('Коэффициент теплопередачи', callback_data='heco-4'))
+
 
 but_holod = telebot.types.InlineKeyboardMarkup()
-but_holod.row(telebot.types.InlineKeyboardButton('Свойства воздуха', callback_data='properties-1'))
+but_holod.row(telebot.types.InlineKeyboardButton('Коэффициент теплопередачи', callback_data='properties-1'))
 but_holod.row(telebot.types.InlineKeyboardButton('Конвертер величин', callback_data='properties-2'))
 
 
@@ -39,7 +39,9 @@ class Messages:
         return (f'Раздел инструменты выбрал(а) ты! Страх доступ открывает к тёмной стороне. Страх рождает гнев, гнев рождает ненависть, ненависть — залог страданий ! 🙂')
 
 
+class Sticers:
 
+    bird = 'CAACAgIAAxkBAAEHDI1mm67IFjG1DGW2hS50y-3sPrTcXQAC_BIAAuvh8Ug4O8mr8lVqtjUE'
 
 
 

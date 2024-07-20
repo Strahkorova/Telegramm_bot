@@ -1,9 +1,11 @@
+from time import sleep
+
 from config import bot
 from telebot import types
-from Class_vent import calculation, assimialtion_thermo_and_cool, thermo_refrigeration
+from Class_vent import calculation, assimialtion_thermo_and_cool, thermo_refrigeration, tools
 import Class_vent
 import dialogs
-from dialogs import Messages
+from dialogs import Messages, Sticers
 
 
 @bot.message_handler(commands=['start'])
@@ -18,6 +20,7 @@ def start(mess):
     markup.row(btn2, btn3)
     markup.row(btn4)
     bot.send_message(mess.chat.id, Messages.start(mess), reply_markup=markup)
+    bot.send_sticker(mess.chat.id, Sticers.bird)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -48,6 +51,9 @@ def callback_worker(call):
     elif call.data == 'heco-3':
         num = bot.send_message(call.message.chat.id, 'Укажите расход теплоносителя, в м3/час')
         bot.register_next_step_handler(num, regulation)
+    elif call.data == 'properties-1':
+        bot.edit_message_text(f'Выберите тип ограждения:\n однослойное - /one_layer \n многослойное - /many_layers',
+            call.message.chat.id, call.message.message_id, parse_mode='html')
 
 
 #Расчет значений Kvs для регулирующей арматуры
@@ -81,6 +87,44 @@ def scor_2(message):
 
 
 ########################################################################################################
+
+@bot.message_handler(commands=['one_layer', 'many_layers'])
+def one_step(message):
+    global layer
+    layer = message.text
+    num = bot.send_message(message.chat.id, 'Укажите толщину слоя в мм')
+    bot.register_next_step_handler(num, two_step)
+
+def two_step(message):
+    global tolshina
+    tolshina = message.text.replace(',', '.')
+    num = bot.send_message(message.chat.id, 'Укажите коэффициент теплопроводности слоя в Вт/(м²*К)')
+    bot.register_next_step_handler(num, three_step)
+
+def three_step(message):
+    global teploprovodnost
+    teploprovodnost = message.text.replace(',', '.')
+    quethion = bot.send_message(message.chat.id, f'Добавить еще слой?:\n Да - /Yes \n Нет - /No', parse_mode='html')
+    bot.register_next_step_handler(quethion, four_step)
+
+koeff_thermo = {}
+
+def four_step(message):
+    global yes_no
+    yes_no = message.text
+    if yes_no == '/No':
+        if not koeff_thermo:
+            tools.teploperedacha(message, teploprovodnost, tolshina)
+        else:
+            koeff_thermo[tolshina] = teploprovodnost
+            tools.koeff_teplo(message, koeff_thermo)
+            koeff_thermo.clear()
+    elif yes_no == '/Yes':
+        koeff_thermo[tolshina] = teploprovodnost
+        one_step(message)
+
+
+
 
 #Расчет расхода и скорости теплоносителя в трубе
 @bot.message_handler(commands=['water', 'antifriz', 'plastic', 'steel', 'cuprum'])
@@ -121,13 +165,6 @@ def rashet_rashod_water(message):
         thermo_refrigeration.rashod_teplonositel(message, Q, dt, comm_water)
     else:
         thermo_refrigeration.scorost_teplonositel(message, Gw, comm_water)
-
-
-
-
-
-
-
 
 
 #ассимиляция тепло- и влагоизбытков
@@ -288,5 +325,10 @@ def refrigeration(message):
 
 
 
-bot.polling(non_stop=True)
+while True:
+    try:
+        bot.polling(none_stop=True)
+    except Exception as _ex:
+        print(_ex)
+        sleep(15)
 

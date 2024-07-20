@@ -1,7 +1,7 @@
 import telebot
 import prettytable as pt
 from config import bot
-
+from dialogs import Sticers
 class calculation:
 
     #Расчет скосроти воздуха в воздуховоде
@@ -83,7 +83,6 @@ class thermo_refrigeration:
             bot.send_message(message.chat.id, (f'Массовый расход антифриз в системе равен - {round(G, 3)} кг/с'))
 
     def scorost_teplonositel(message, G, type_tube):
-        data = []
         pw = message.text.replace(',', '.')
 
         plastic = {'20x3,4': 0.0001367, '25x4,2': 0.0002164, '32x5,4': 0.0003529, '40x6,7': 0.0005557,
@@ -97,14 +96,15 @@ class thermo_refrigeration:
                   '13x1,5': 0.0000785, '13x2,0': 0.00006358, '26x2,0': 0.0003799, '45x3,0': 0.001194, '50x3,0': 0.001519}
 
         if type_tube == '/plastic':
-            thermo_refrigeration.tube_scorost(message, G, pw, plastic, data)
+            thermo_refrigeration.tube_scorost(message, G, pw, plastic)
         elif type_tube == '/steel':
-            thermo_refrigeration.tube_scorost(message, G, pw, steel, data)
+            thermo_refrigeration.tube_scorost(message, G, pw, steel)
         elif type_tube == '/cuprum':
-            thermo_refrigeration.tube_scorost(message, G, pw, cuprum, data)
+            thermo_refrigeration.tube_scorost(message, G, pw, cuprum)
 
-    def tube_scorost(message, G, pw, list, data):
-        for tube, place in list.items():
+    def tube_scorost(message, G, pw, dicty):
+        data = []
+        for tube, place in dicty.items():
             v = float(G) / (float(pw) * place)
             tube_scor = (tube, place, v)
             data.append(tube_scor)
@@ -113,3 +113,33 @@ class thermo_refrigeration:
         for tube, place, speed in data:
             table.add_row([tube, f'{place:.5f}', f'{speed:.3f}'])
         bot.send_message(message.chat.id, f'<pre>{table}</pre>', parse_mode='html')
+
+
+class tools:
+
+    def teploperedacha(message, tolshina, teploprov):
+        k = 1/((1/8)+(float(tolshina)/1000) / float(teploprov)+(1/21))
+        bot.send_message(message.chat.id, f'Коэффициент теплопередачи однослойной ограждающей стенки равен - {round(k, 3)} Вт/(м2*К)')
+
+
+
+    def koeff_teplo(message, dicty):
+        data = []
+        list_R = []
+        n = 1
+        for tolshina, teploprov in dicty.items():
+
+            R = (float(tolshina)/1000) / float(teploprov)
+            k_scor = (n, float(tolshina), float(teploprov), R)
+            data.append(k_scor)
+            list_R.append(R)
+            n +=1
+
+        SR = sum(list_R)
+        k = 1/((1/8)+SR+(1/21))
+
+        table = pt.PrettyTable(['Слой', 'Толщина, мм', 'ʎ, Вт/(м2*К)', 'R, Вт/(м2*К)'])
+        for n, b, v, r in data:
+           table.add_row([n, f'{b:.1f}', f'{v:.3f}', f'{r:.2f}'])
+        bot.send_message(message.chat.id, f'<pre>{table}</pre>', parse_mode='html')
+        bot.send_message(message.chat.id, f'Коэффициент теплопередачи многослойной ограждающей стенки равен - {round(k, 3)} Вт/(м2*К)')
