@@ -52,7 +52,12 @@ def callback_worker(call):
         num = bot.send_message(call.message.chat.id, 'Укажите расход теплоносителя, в м3/час')
         bot.register_next_step_handler(num, regulation)
     elif call.data == 'properties-1':
-        bot.edit_message_text(f'Какие коэффициенты теплоотдачи принять (только для нескольких слоев):\n по рекомендации - /one_layer \n пользовательские - /many_layers',
+        bot.edit_message_text(f'Какие коэффициенты теплоотдачи принять (только для нескольких слоев):'
+                              f'\n по рекомендации - /one_layer \n пользовательские - /many_layers',
+            call.message.chat.id, call.message.message_id, parse_mode='html')
+    elif call.data == 'properties-2':
+        bot.edit_message_text(f'Выберите параметр для конвертации:\n Температура - /temperature '
+                              f'\n Давление - /pressure \n Кол-во теплоты - /number_heat',
             call.message.chat.id, call.message.message_id, parse_mode='html')
 
 
@@ -70,7 +75,6 @@ def Kvs_system(message):
     bot.send_message(message.chat.id, (
         f'Вам {message.from_user.first_name} необходимо - {round(K, 3)} м3/час пропускной способности регулирующего клапана! 😱'))
 
-
 #Расчет площади сечения воздуховода и размера дефлектора ЦАГИ
 def scor_1(message):
     global L
@@ -79,7 +83,8 @@ def scor_1(message):
         operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с')
         bot.register_next_step_handler(operu, scor_2)
     elif cagi == 'vent-6':
-        operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с, ВАЖНО: принимать равной половине скорости ветра согласно СП "Строительная климатология"!')
+        operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с, '
+                                                  'ВАЖНО: принимать равной половине скорости ветра согласно СП "Строительная климатология"!')
         bot.register_next_step_handler(operu, scor_2)
 
 def scor_2(message):
@@ -88,6 +93,56 @@ def scor_2(message):
 
 ########################################################################################################
 
+#Конвертер величин
+@bot.message_handler(commands=['temperature', 'pressure', 'number_heat'])
+def converter(message):
+    parametr = message.text
+    if parametr == '/temperature':
+        op = bot.send_message(message.chat.id, 'Выберите исходную величину: \n Кельвин - /K \n градус Цельсия ℃ - /C \n '
+                                               'градус Фаренгейта ℉ - /F \n градус Ренкина °R - /R', parse_mode='html')
+        bot.register_next_step_handler(op, temperature)
+    elif parametr == '/number_heat':
+        op = bot.send_message(message.chat.id, 'Выберите исходную величину: \n кВт - /kBt \n Гкал - /Gkall', parse_mode='html')
+        bot.register_next_step_handler(op, number_heat)
+    elif parametr == '/pressure':
+        op = bot.send_message(message.chat.id, 'Выберите исходную величину: \n кПа - /kPa \n кгс/см2 - /kgs_cm2'
+                                               '\n м.вод.ст - /m.water.st \n Бар - /Bar \n мм.рт.ст - /mm.rt.st', parse_mode='html')
+        bot.register_next_step_handler(op, pressure)
+
+def temperature(message):
+    global param_convert
+    param_convert = message.text
+    if param_convert == '/K':
+        t = bot.send_message(message.chat.id, 'Выберите исходную величину в Кельвинах')
+        bot.register_next_step_handler(t, start_convert)
+    elif param_convert == '/C':
+        t = bot.send_message(message.chat.id, 'Выберите исходную величину в градусах Цельсия')
+    elif param_convert == '/F':
+        t = bot.send_message(message.chat.id, 'Выберите исходную величину в градусах Фаренгейта')
+    elif param_convert == '/R':
+        t = bot.send_message(message.chat.id, 'Выберите исходную величину в градусах Ренкина')
+
+
+def number_heat(message):
+    print()
+
+
+def pressure(message):
+    print()
+
+def start_convert(message):
+    T = message.text.replace(',', '.')
+    tools.temperature_conv(message, T, param_convert)
+
+
+
+
+
+
+
+
+
+#Расчет коэффициента теплопередачи для однослойной и многослойной стенки
 @bot.message_handler(commands=['one_layer', 'many_layers'])
 def zero_step(message):
     global layer
@@ -110,7 +165,7 @@ def three_step(message):
     quethion = bot.send_message(message.chat.id, f'Добавить еще слой?:\n Да - /Yes \n Нет - /No', parse_mode='html')
     bot.register_next_step_handler(quethion, four_step)
 
-koeff_thermo = {}
+koeff_thermo = {} #Хранятся толщина и коэффициентр теплопроводности, где толщина это ключ
 
 def four_step(message):
     global yes_no

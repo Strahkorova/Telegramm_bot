@@ -141,3 +141,33 @@ class tools:
            table.add_row([n, f'{b:.1f}', f'{v:.3f}', f'{r:.2f}'])
         bot.send_message(message.chat.id, f'<pre>{table}</pre>', parse_mode='html')
         bot.send_message(message.chat.id, f'Коэффициент теплопередачи многослойной ограждающей стенки равен - {round(k, 3)} Вт/(м2*К)')
+
+
+    def temperature_conv(message, T, param):
+        if param == '/K':
+            C = float(T)-273.15
+            F = float(T)*1.8-459.67
+            R = float(T)*1.8
+            bot.send_message(message.chat.id, f'Выберите исходную величину: \n Кельвин - {T} K \n градус Цельсия - {C} ℃ \n '
+                                              f'градус Фаренгейта - {F} ℉ \n градус Ренкина - {R} °R', parse_mode='html')
+        elif param == '/C':
+            K = float(T)+273.15
+            F = float(T)*1.8+32
+            R = (float(T)+273.15)*1.8
+            bot.send_message(message.chat.id,
+                             f'Выберите исходную величину: \n Кельвин - {K} K \n градус Цельсия - {T} ℃ \n '
+                             f'градус Фаренгейта - {F} ℉ \n градус Ренкина - {R} °R', parse_mode='html')
+        elif param == '/F':
+            K = (float(T)+459.67)*(5/9)
+            C = (float(T)-32)*(5/9)
+            R = float(T)+459.67
+            bot.send_message(message.chat.id,
+                             f'Выберите исходную величину: \n Кельвин - {K} K \n градус Цельсия - {C} ℃ \n '
+                             f'градус Фаренгейта - {T} ℉ \n градус Ренкина - {R} °R', parse_mode='html')
+        elif param == '/R':
+            K = float(T)/1.8
+            C = (float(T)/1.8)-273.15
+            F = float(T) - 459.67
+            bot.send_message(message.chat.id,
+                             f'Выберите исходную величину: \n Кельвин - {K} K \n градус Цельсия - {C} ℃ \n '
+                             f'градус Фаренгейта - {F} ℉ \n градус Ренкина - {T} °R', parse_mode='html')
