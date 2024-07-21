@@ -1,9 +1,7 @@
 from time import sleep
-
 from config import bot
 from telebot import types
 from Class_vent import calculation, assimialtion_thermo_and_cool, thermo_refrigeration, tools
-import Class_vent
 import dialogs
 from dialogs import Messages, Sticers
 
@@ -15,7 +13,7 @@ def start(mess):
     btn1 = types.KeyboardButton('/Вентиляция')
     btn2 = types.KeyboardButton('/Тепло-и_Холодоснабжение')
     btn3 = types.KeyboardButton('/Инструменты')
-    btn4 = types.KeyboardButton('/Отмена')
+    btn4 = types.KeyboardButton('/stop')
     markup.row(btn1)
     markup.row(btn2, btn3)
     markup.row(btn4)
@@ -83,7 +81,7 @@ def scor_1(message):
         operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с')
         bot.register_next_step_handler(operu, scor_2)
     elif cagi == 'vent-6':
-        operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с, '
+        operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с,'
                                                   'ВАЖНО: принимать равной половине скорости ветра согласно СП "Строительная климатология"!')
         bot.register_next_step_handler(operu, scor_2)
 
@@ -96,14 +94,15 @@ def scor_2(message):
 #Конвертер величин
 @bot.message_handler(commands=['temperature', 'pressure', 'number_heat'])
 def converter(message):
+    global parametr
     parametr = message.text
     if parametr == '/temperature':
         op = bot.send_message(message.chat.id, 'Выберите исходную величину: \n Кельвин - /K \n градус Цельсия ℃ - /C \n '
-                                               'градус Фаренгейта ℉ - /F \n градус Ренкина °R - /R', parse_mode='html')
+                                               'градус Фаренгейта ℉ - /F \n градус Ранкина °R - /R', parse_mode='html')
         bot.register_next_step_handler(op, temperature)
     elif parametr == '/number_heat':
-        op = bot.send_message(message.chat.id, 'Выберите исходную величину: \n кВт - /kBt \n Гкал - /Gkall', parse_mode='html')
-        bot.register_next_step_handler(op, number_heat)
+        hop = bot.send_message(message.chat.id, 'Выберите исходную величину: \n кВт - /kBt \n Гкал - /Gkall', parse_mode='html')
+        bot.register_next_step_handler(hop, number_heat)
     elif parametr == '/pressure':
         op = bot.send_message(message.chat.id, 'Выберите исходную величину: \n кПа - /kPa \n кгс/см2 - /kgs_cm2'
                                                '\n м.вод.ст - /m.water.st \n Бар - /Bar \n мм.рт.ст - /mm.rt.st', parse_mode='html')
@@ -113,32 +112,61 @@ def temperature(message):
     global param_convert
     param_convert = message.text
     if param_convert == '/K':
-        t = bot.send_message(message.chat.id, 'Выберите исходную величину в Кельвинах')
+        t = bot.send_message(message.chat.id, 'Введите исходную величину в Кельвинах')
         bot.register_next_step_handler(t, start_convert)
     elif param_convert == '/C':
-        t = bot.send_message(message.chat.id, 'Выберите исходную величину в градусах Цельсия')
+        t = bot.send_message(message.chat.id, 'Введите исходную величину в градусах Цельсия')
+        bot.register_next_step_handler(t, start_convert)
     elif param_convert == '/F':
-        t = bot.send_message(message.chat.id, 'Выберите исходную величину в градусах Фаренгейта')
+        t = bot.send_message(message.chat.id, 'Введите исходную величину в градусах Фаренгейта')
+        bot.register_next_step_handler(t, start_convert)
     elif param_convert == '/R':
-        t = bot.send_message(message.chat.id, 'Выберите исходную величину в градусах Ренкина')
-
+        t = bot.send_message(message.chat.id, 'Введите исходную величину в градусах Ранкина')
+        bot.register_next_step_handler(t, start_convert)
+    elif param_convert == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
 
 def number_heat(message):
-    print()
-
+    global param_convert
+    param_convert = message.text
+    if param_convert == '/kBt':
+        Kv = bot.send_message(message.chat.id, 'Выберите исходную величину в кВт')
+        bot.register_next_step_handler(Kv, start_convert)
+    elif param_convert == '/Gkall':
+        Gk = bot.send_message(message.chat.id, 'Выберите исходную величину в Гкалл')
+        bot.register_next_step_handler(Gk, start_convert)
+    elif param_convert == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
 
 def pressure(message):
-    print()
+    if param_convert == '/kPa':
+        kPa = bot.send_message(message.chat.id, 'Выберите исходную величину в кВт')
+        bot.register_next_step_handler(kPa, start_convert)
+    elif param_convert == '/kgs_cm2':
+        kgs_cm2 = bot.send_message(message.chat.id, 'Выберите исходную величину в кгс/см2')
+        bot.register_next_step_handler(kgs_cm2, start_convert)
+    elif param_convert == '/Bar':
+        Bar = bot.send_message(message.chat.id, 'Выберите исходную величину в Бар')
+        bot.register_next_step_handler(Bar, start_convert)
+    elif param_convert == '/m.water.st':
+        m_water_st = bot.send_message(message.chat.id, 'Выберите исходную величину в м.вод.ст')
+        bot.register_next_step_handler(m_water_st, start_convert)
+    elif param_convert == '/mm.rt.st':
+        mm_rt_st = bot.send_message(message.chat.id, 'Выберите исходную величину в мм.рт.ст')
+        bot.register_next_step_handler(mm_rt_st, start_convert)
+    elif param_convert == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
 
 def start_convert(message):
     T = message.text.replace(',', '.')
-    tools.temperature_conv(message, T, param_convert)
-
-
-
-
-
-
+    if T == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    elif parametr == '/temperature':
+        tools.temperature_conv(message, T, param_convert)
+    elif parametr == '/pressure':
+        tools.pressure_conv(message, T, param_convert)
+    elif parametr == '/number_heat':
+        tools.heat_conv(message, T, param_convert)
 
 
 

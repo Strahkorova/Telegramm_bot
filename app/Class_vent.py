@@ -1,4 +1,3 @@
-import telebot
 import prettytable as pt
 from config import bot
 from dialogs import Sticers
@@ -38,7 +37,6 @@ class calculation:
         except:
             bot.send_message(message.chat.id, "ошибка ведите /start")
 
-
 class assimialtion_thermo_and_cool:
 
     #Расчет количества теплоты или холода для обработки воздуха
@@ -68,7 +66,6 @@ class assimialtion_thermo_and_cool:
             L = float(Q) / ((float(dt) - float(t1)) * float(p))
             bot.send_message(message.chat.id, (
                 f'Вам {message.from_user.first_name} необходимо - {round(L, 2)} м3/час для удавления {Q} г/час влаги! 🐳'))
-
 
 class thermo_refrigeration:
 
@@ -114,7 +111,6 @@ class thermo_refrigeration:
             table.add_row([tube, f'{place:.5f}', f'{speed:.3f}'])
         bot.send_message(message.chat.id, f'<pre>{table}</pre>', parse_mode='html')
 
-
 class tools:
 
     def teploperedacha(message, tolshina, teploprov):
@@ -142,32 +138,76 @@ class tools:
         bot.send_message(message.chat.id, f'<pre>{table}</pre>', parse_mode='html')
         bot.send_message(message.chat.id, f'Коэффициент теплопередачи многослойной ограждающей стенки равен - {round(k, 3)} Вт/(м2*К)')
 
-
     def temperature_conv(message, T, param):
         if param == '/K':
             C = float(T)-273.15
             F = float(T)*1.8-459.67
             R = float(T)*1.8
-            bot.send_message(message.chat.id, f'Выберите исходную величину: \n Кельвин - {T} K \n градус Цельсия - {C} ℃ \n '
-                                              f'градус Фаренгейта - {F} ℉ \n градус Ренкина - {R} °R', parse_mode='html')
+            bot.send_message(message.chat.id, f'Кельвин: {T} K \n градус Цельсия: {C: .3f} ℃ \n '
+                                              f'градус Фаренгейта: {F: .3f} ℉ \n градус Ранкина: {R: .3f} °R', parse_mode='html')
         elif param == '/C':
             K = float(T)+273.15
             F = float(T)*1.8+32
             R = (float(T)+273.15)*1.8
             bot.send_message(message.chat.id,
-                             f'Выберите исходную величину: \n Кельвин - {K} K \n градус Цельсия - {T} ℃ \n '
-                             f'градус Фаренгейта - {F} ℉ \n градус Ренкина - {R} °R', parse_mode='html')
+                             f'Кельвин: {K: .3f} K \n градус Цельсия: {T} ℃ \n '
+                             f'градус Фаренгейта: {F: .3f} ℉ \n градус Ранкина: {R: .3f} °R', parse_mode='html')
         elif param == '/F':
             K = (float(T)+459.67)*(5/9)
             C = (float(T)-32)*(5/9)
             R = float(T)+459.67
             bot.send_message(message.chat.id,
-                             f'Выберите исходную величину: \n Кельвин - {K} K \n градус Цельсия - {C} ℃ \n '
-                             f'градус Фаренгейта - {T} ℉ \n градус Ренкина - {R} °R', parse_mode='html')
+                             f'Кельвин: {K: .3f} K \n градус Цельсия: {C: .3f} ℃ \n '
+                             f'градус Фаренгейта: {T} ℉ \n градус Ранкина: {R: .3f} °R', parse_mode='html')
         elif param == '/R':
             K = float(T)/1.8
             C = (float(T)/1.8)-273.15
             F = float(T) - 459.67
             bot.send_message(message.chat.id,
-                             f'Выберите исходную величину: \n Кельвин - {K} K \n градус Цельсия - {C} ℃ \n '
-                             f'градус Фаренгейта - {F} ℉ \n градус Ренкина - {T} °R', parse_mode='html')
+                             f'Кельвин: {K: .3f} K \n градус Цельсия: {C: .3f} ℃ \n '
+                             f'градус Фаренгейта: {F: .3f} ℉ \n градус Ранкина: {T} °R', parse_mode='html')
+
+    def pressure_conv(message, T, param):
+        if param == '/kPa':
+            kgs_cm2 = 1
+            Bar = 1
+            m_water_st = 1
+            mm_rt_st = 1
+            bot.send_message(message.chat.id, f'кПа: {T} \n kgs_cm2: {kgs_cm2: 3f} \n Bar: {Bar: 3f}'
+                                              f' \n m.water.st: {m_water_st: 3f} \n mm.rt.st: {mm_rt_st: 3f}', parse_mode='html')
+        elif param == '/kgs_cm2':
+            kPa = 1
+            Bar = 1
+            m_water_st = 1
+            mm_rt_st = 1
+            bot.send_message(message.chat.id, f'кПа: {kPa: 3f} \n kgs_cm2: {T} \n Bar: {Bar}'
+                                              f' \n m.water.st: {m_water_st} \n mm.rt.st: {mm_rt_st}', parse_mode='html')
+        elif param == '/Bar':
+            kgs_cm2 = 1
+            kPa = 1
+            m_water_st = 1
+            mm_rt_st = 1
+            bot.send_message(message.chat.id, f'кПа: {kPa} \n kgs_cm2: {kgs_cm2} \n Bar: {T}'
+                                              f' \n m.water.st: {m_water_st} \n mm.rt.st: {mm_rt_st}', parse_mode='html')
+        elif param == '/m.water.st':
+            kgs_cm2 = 1
+            Bar = 1
+            kPa = 1
+            mm_rt_st = 1
+            bot.send_message(message.chat.id, f'кПа: {kPa} \n kgs_cm2: {kgs_cm2} \n Bar: {Bar}'
+                                              f' \n m.water.st: {T} \n mm.rt.st: {mm_rt_st}', parse_mode='html')
+        elif param == '/mm.rt.st':
+            kgs_cm2 = 1
+            Bar = 1
+            m_water_st = 1
+            kPa = 1
+            bot.send_message(message.chat.id, f'кПа: {kPa} \n kgs_cm2: {kgs_cm2} \n Bar: {Bar}'
+                                              f' \n m.water.st: {m_water_st} \n mm.rt.st: {T}', parse_mode='html')
+
+    def heat_conv(message, T, param):
+        if param == '/kBt':
+            G = float(T)/1163
+            bot.send_message(message.chat.id, f'кВт: {T} \n Гкал: {G: .4f}', parse_mode='html')
+        elif param == '/Gkall':
+            K = float(T) * 1163
+            bot.send_message(message.chat.id, f'кВт: {K: .3f} \n Гкал: {T}', parse_mode='html')
