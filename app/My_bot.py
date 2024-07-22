@@ -105,7 +105,7 @@ def converter(message):
         bot.register_next_step_handler(hop, number_heat)
     elif parametr == '/pressure':
         op = bot.send_message(message.chat.id, 'Выберите исходную величину: \n кПа - /kPa \n кгс/см2 - /kgs_cm2'
-                                               '\n м.вод.ст - /m.water.st \n Бар - /Bar \n мм.рт.ст - /mm.rt.st', parse_mode='html')
+                                               '\n м.вод.ст - /m_water_st \n Бар - /Bar \n мм.рт.ст - /mm_rt_st', parse_mode='html')
         bot.register_next_step_handler(op, pressure)
 
 def temperature(message):
@@ -139,6 +139,8 @@ def number_heat(message):
         bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
 
 def pressure(message):
+    global param_convert
+    param_convert = message.text
     if param_convert == '/kPa':
         kPa = bot.send_message(message.chat.id, 'Выберите исходную величину в кВт')
         bot.register_next_step_handler(kPa, start_convert)
@@ -148,10 +150,10 @@ def pressure(message):
     elif param_convert == '/Bar':
         Bar = bot.send_message(message.chat.id, 'Выберите исходную величину в Бар')
         bot.register_next_step_handler(Bar, start_convert)
-    elif param_convert == '/m.water.st':
+    elif param_convert == '/m_water_st':
         m_water_st = bot.send_message(message.chat.id, 'Выберите исходную величину в м.вод.ст')
         bot.register_next_step_handler(m_water_st, start_convert)
-    elif param_convert == '/mm.rt.st':
+    elif param_convert == '/mm_rt_st':
         mm_rt_st = bot.send_message(message.chat.id, 'Выберите исходную величину в мм.рт.ст')
         bot.register_next_step_handler(mm_rt_st, start_convert)
     elif param_convert == '/stop':

@@ -168,41 +168,42 @@ class tools:
                              f'градус Фаренгейта: {F: .3f} ℉ \n градус Ранкина: {T} °R', parse_mode='html')
 
     def pressure_conv(message, T, param):
+        P = float(T)
         if param == '/kPa':
-            kgs_cm2 = 1
-            Bar = 1
-            m_water_st = 1
-            mm_rt_st = 1
-            bot.send_message(message.chat.id, f'кПа: {T} \n kgs_cm2: {kgs_cm2: 3f} \n Bar: {Bar: 3f}'
-                                              f' \n m.water.st: {m_water_st: 3f} \n mm.rt.st: {mm_rt_st: 3f}', parse_mode='html')
+            kgs_cm2 = P*0.0102
+            Bar = P/100
+            m_water_st = P*0.10197
+            mm_rt_st = P*7.5006
+            bot.send_message(message.chat.id, f' кПа: {T} \n кгс/см2: {kgs_cm2: .3f} \n Бар: {Bar: .3f}'
+                                              f' \n м.вод.ст: {m_water_st: .3f} \n мм.рт.ст: {mm_rt_st: .3f}', parse_mode='html')
         elif param == '/kgs_cm2':
-            kPa = 1
-            Bar = 1
-            m_water_st = 1
-            mm_rt_st = 1
-            bot.send_message(message.chat.id, f'кПа: {kPa: 3f} \n kgs_cm2: {T} \n Bar: {Bar}'
-                                              f' \n m.water.st: {m_water_st} \n mm.rt.st: {mm_rt_st}', parse_mode='html')
+            kPa = (P/1.0197)*100
+            Bar = P/1.0197
+            m_water_st = P*10
+            mm_rt_st = P*735.56
+            bot.send_message(message.chat.id, f' кПа: {kPa: .3f} \n кгс/см2: {T} \n Бар: {Bar: .3f}'
+                                              f' \n м.вод.ст: {m_water_st: .3f} \n мм.рт.ст: {mm_rt_st: .3f}', parse_mode='html')
         elif param == '/Bar':
-            kgs_cm2 = 1
-            kPa = 1
-            m_water_st = 1
-            mm_rt_st = 1
-            bot.send_message(message.chat.id, f'кПа: {kPa} \n kgs_cm2: {kgs_cm2} \n Bar: {T}'
-                                              f' \n m.water.st: {m_water_st} \n mm.rt.st: {mm_rt_st}', parse_mode='html')
-        elif param == '/m.water.st':
-            kgs_cm2 = 1
-            Bar = 1
-            kPa = 1
-            mm_rt_st = 1
-            bot.send_message(message.chat.id, f'кПа: {kPa} \n kgs_cm2: {kgs_cm2} \n Bar: {Bar}'
-                                              f' \n m.water.st: {T} \n mm.rt.st: {mm_rt_st}', parse_mode='html')
-        elif param == '/mm.rt.st':
-            kgs_cm2 = 1
-            Bar = 1
-            m_water_st = 1
-            kPa = 1
-            bot.send_message(message.chat.id, f'кПа: {kPa} \n kgs_cm2: {kgs_cm2} \n Bar: {Bar}'
-                                              f' \n m.water.st: {m_water_st} \n mm.rt.st: {T}', parse_mode='html')
+            kgs_cm2 = P*1.0197
+            kPa = P*100
+            m_water_st = P*10.197
+            mm_rt_st = P*750.06
+            bot.send_message(message.chat.id, f' кПа: {kPa: .3f} \n кгс/см2: {kgs_cm2: .3f} \n Бар: {T}'
+                                              f' \n м.вод.ст: {m_water_st: .3f} \n мм.рт.ст: {mm_rt_st: .3f}', parse_mode='html')
+        elif param == '/m_water_st':
+            kgs_cm2 = P/10
+            Bar = P/10.197
+            kPa = P/0.10197
+            mm_rt_st = P*73.55
+            bot.send_message(message.chat.id, f' кПа: {kPa: .3f} \n кгс/см2: {kgs_cm2: .3f} \n Бар: {Bar: .3f}'
+                                              f' \n м.вод.ст: {T} \n мм.рт.ст: {mm_rt_st: .3f}', parse_mode='html')
+        elif param == '/mm_rt_st':
+            kgs_cm2 = P/735.56
+            Bar = P/750.06
+            m_water_st = P/73.556
+            kPa = P/7.5006
+            bot.send_message(message.chat.id, f' кПа: {kPa: .3f} \n кгс/см2: {kgs_cm2: .3f} \n Бар: {Bar: .3f}'
+                                              f' \n м.вод.ст: {m_water_st: .3f} \nмм.рт.ст: {T}', parse_mode='html')
 
     def heat_conv(message, T, param):
         if param == '/kBt':
