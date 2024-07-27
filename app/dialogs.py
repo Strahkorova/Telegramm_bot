@@ -22,12 +22,31 @@ but_holod.row(telebot.types.InlineKeyboardButton('Коэффициент теп�
 but_holod.row(telebot.types.InlineKeyboardButton('Конвертер величин', callback_data='properties-2'))
 
 
+
+
+markup = telebot.types.ReplyKeyboardMarkup()
+btn1 = telebot.types.KeyboardButton('/Вентиляция')
+btn2 = telebot.types.KeyboardButton('/Тепло-и_Холодоснабжение')
+btn3 = telebot.types.KeyboardButton('/Инструменты')
+btn4 = telebot.types.KeyboardButton('/stop')
+btn5 = telebot.types.KeyboardButton('/DataBase')
+markup.row(btn1)
+markup.row(btn2, btn3)
+markup.row(btn4, btn5)
+
+
 @dataclass(frozen=True)
 class Messages:
 
     def start(mess):
-        return (f'Привет юный падаван, {mess.from_user.first_name}! Мудрость от Йоды "Светлая сторона силы путь верный к могуществу инженера!" Да прибудет с тобой сила!')
+        if mess.from_user.id == 1125053880:
+            return (f'Здравствуйте верховный магистр, {mess.from_user.first_name}! Да прибудет с Вами сила!')
+        else:
+            return (f'Привет мой юный падаван, {mess.from_user.first_name}! Мудрость от Йоды "Светлая сторона силы путь верный к могуществу инженера!" Да прибудет с тобой сила!')
 
+    def start_djedai(mess):
+        return (f'Галактика нуждается в тебе юный джедай! Необходимо добавить к базе научный закон из области естественных наук, например, физики, химии и т.д.'
+                f'Ты готов помочь Республике? \n /I_am_ready \n /I_am_not_ready')
 
     def ventilation(mess):
         return (f'Раздел вентиляция выбрал(а) ты! Верный выбор, путь к верным расчетам! 🖖')
@@ -42,6 +61,10 @@ class Messages:
 class Sticers:
 
     bird = 'CAACAgIAAxkBAAEHDI1mm67IFjG1DGW2hS50y-3sPrTcXQAC_BIAAuvh8Ug4O8mr8lVqtjUE'
+
+    yoda = 'CAACAgQAAxkBAAEHOr5mo-9IUxusoLvm6oTneSo3gadA9gACpAMAAoIVwR3Mn_oILMkK0jUE'
+
+    Nooo = 'CAACAgQAAxkBAAEHOyxmo_qf71_f4ZYrJXYHjN18w2F0UQACAgEAAoIVwR3dIwk_D0OU7DUE'
 
 
 

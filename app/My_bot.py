@@ -4,21 +4,47 @@ from telebot import types
 from Class_vent import calculation, assimialtion_thermo_and_cool, thermo_refrigeration, tools
 import dialogs
 from dialogs import Messages, Sticers
+from database import Database, Base
+import database
 
 
 @bot.message_handler(commands=['start'])
 #Создание кнопок в модели
 def start(mess):
-    markup = types.ReplyKeyboardMarkup()
-    btn1 = types.KeyboardButton('/Вентиляция')
-    btn2 = types.KeyboardButton('/Тепло-и_Холодоснабжение')
-    btn3 = types.KeyboardButton('/Инструменты')
-    btn4 = types.KeyboardButton('/stop')
-    markup.row(btn1)
-    markup.row(btn2, btn3)
-    markup.row(btn4)
-    bot.send_message(mess.chat.id, Messages.start(mess), reply_markup=markup)
-    bot.send_sticker(mess.chat.id, Sticers.bird)
+    Base.metadata.create_all(bind=database.engine) #Создаем базу данных
+    bot.send_message(mess.chat.id, Messages.start(mess))
+    if mess.from_user.id == 1125053880:
+        bot.send_message(mess.chat.id, 'Каковы будут указания верховный магистр?', reply_markup=dialogs.markup)
+    else:
+        bot.send_message(mess.chat.id, Messages.start_djedai(mess), parse_mode='html')
+
+
+#Началао работы бота. предлложение добавить запись в базу
+@bot.message_handler(commands=['I_am_ready', 'I_am_not_ready', 'add_base', 'select_all_base'])
+def start_quetion(message):
+    answer = message.text
+    if answer == '/I_am_not_ready':
+        bot.send_message(message.chat.id, 'Не волнуйся юный падаван! Светлая сторона путь верный к силе.'
+                                          'Верховный магистр поможет тебе обрести силу разума!!!', reply_markup=dialogs.markup)
+    elif answer == '/I_am_ready' or answer == '/add_base':
+        hop = bot.send_message(message.chat.id, 'Кто автор научного закона?')
+        bot.register_next_step_handler(hop, autor_tezis)
+    elif answer == '/select_all_base':
+        database.select_all(message)
+
+def autor_tezis(message):
+    global autor
+    autor = message.text
+    hop = bot.send_message(message.chat.id, 'Напиши закон')
+    bot.register_next_step_handler(hop, insert_in_base_autor)
+
+def insert_in_base_autor(message):
+    global text_tezis
+    text_tezis = message.text
+    database.insert(message, autor, text_tezis)
+    bot.send_sticker(message.chat.id, Sticers.yoda, reply_markup=dialogs.markup)
+
+
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -410,12 +436,21 @@ def ventil(message):
 
 @bot.message_handler(commands=['Тепло-и_Холодоснабжение'])
 def thermo_cooling(message):
-    bot.send_message(message.chat.id, Messages.thermocooling(message), reply_markup= dialogs.but_heat_cool)
+    bot.send_message(message.chat.id, Messages.thermocooling(message), reply_markup=dialogs.but_heat_cool)
 
 @bot.message_handler(commands=['Инструменты'])
 def refrigeration(message):
-    bot.send_message(message.chat.id, Messages.properties(message), reply_markup= dialogs.but_holod)
+    bot.send_message(message.chat.id, Messages.properties(message), reply_markup=dialogs.but_holod)
 
+@bot.message_handler(commands=['DataBase'])
+def dataBase_all(message):
+    if message.from_user.id == 1125053880:
+        bot.send_message(message.chat.id, f'Выберите тип команды верховный магистр:\n Добавить запись в базу - /add_base '
+                          f'\n Удалить запись из базы - /delete_base \n Выгрузить все из базы - /select_all_base'
+                          f' \n Выгрузить из базы по id - /select_base', parse_mode='html')
+    else:
+        bot.send_message(message.chat.id, f'Шаг к темной стороне пытаешься сделать ты!', )
+        bot.send_sticker(message.chat.id, Sticers.Nooo)
 
 
 
