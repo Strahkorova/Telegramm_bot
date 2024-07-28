@@ -20,7 +20,8 @@ def start(mess):
 
 
 #Началао работы бота. предлложение добавить запись в базу
-@bot.message_handler(commands=['I_am_ready', 'I_am_not_ready', 'add_base', 'select_all_base'])
+@bot.message_handler(commands=['I_am_ready', 'I_am_not_ready', 'add_base', 'select_all_base',
+                               'delete_base_all', 'delete_base', 'select_base'])
 def start_quetion(message):
     answer = message.text
     if answer == '/I_am_not_ready':
@@ -30,7 +31,15 @@ def start_quetion(message):
         hop = bot.send_message(message.chat.id, 'Кто автор научного закона?')
         bot.register_next_step_handler(hop, autor_tezis)
     elif answer == '/select_all_base':
-        database.select_all(message)
+        Database.select_all(message)
+    elif answer == '/delete_base_all':
+        Database.delete_all(message)
+    elif answer == '/delete_base':
+        hop = bot.send_message(message.chat.id, 'Укажите id уважаемый верховный магистр')
+        bot.register_next_step_handler(hop, delete_with_base)
+    elif answer == '/select_base':
+        hop = bot.send_message(message.chat.id, 'Укажите id уважаемый верховный магистр')
+        bot.register_next_step_handler(hop, select_with_base)
 
 def autor_tezis(message):
     global autor
@@ -41,10 +50,16 @@ def autor_tezis(message):
 def insert_in_base_autor(message):
     global text_tezis
     text_tezis = message.text
-    database.insert(message, autor, text_tezis)
+    Database.insert(message, autor, text_tezis)
     bot.send_sticker(message.chat.id, Sticers.yoda, reply_markup=dialogs.markup)
 
+def delete_with_base(message):
+    id_tezis = message.text
+    Database.delete(message, id_tezis)
 
+def select_with_base(message):
+    id_tezis = message.text
+    Database.select_one(message, id_tezis)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -191,10 +206,13 @@ def start_convert(message):
         bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
     elif parametr == '/temperature':
         tools.temperature_conv(message, T, param_convert)
+        Database.select_random(message)
     elif parametr == '/pressure':
         tools.pressure_conv(message, T, param_convert)
+        Database.select_random(message)
     elif parametr == '/number_heat':
         tools.heat_conv(message, T, param_convert)
+        Database.select_random(message)
 
 
 
@@ -445,8 +463,9 @@ def refrigeration(message):
 @bot.message_handler(commands=['DataBase'])
 def dataBase_all(message):
     if message.from_user.id == 1125053880:
-        bot.send_message(message.chat.id, f'Выберите тип команды верховный магистр:\n Добавить запись в базу - /add_base '
-                          f'\n Удалить запись из базы - /delete_base \n Выгрузить все из базы - /select_all_base'
+        bot.send_message(message.chat.id, f'Выберите тип команды верховный магистр:\n Добавить запись в базу - /add_base'
+                          f'\n Удалить запись из базы - /delete_base_all \n Удалить запись из базы по id - /delete_base'
+                                          f'\n Выгрузить все из базы - /select_all_base'
                           f' \n Выгрузить из базы по id - /select_base', parse_mode='html')
     else:
         bot.send_message(message.chat.id, f'Шаг к темной стороне пытаешься сделать ты!', )
