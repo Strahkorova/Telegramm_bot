@@ -1,6 +1,6 @@
 import prettytable as pt
 from config import bot
-from dialogs import Sticers
+from database import Database
 class calculation:
 
     #Расчет скосроти воздуха в воздуховоде
@@ -10,6 +10,7 @@ class calculation:
         try:
             val = float(L) / (float(F) * 3600)
             bot.send_message(message.chat.id, (f'Скорость в воздуховоде равна - {round(val, 1)} м/с'))
+            Database.select_random(message)
         except:
             bot.send_message(message.chat.id, "ошибка ведите /start")
 
@@ -21,9 +22,11 @@ class calculation:
             if cagi == 'vent-2':
                 F = float(L) / (float(v) * 3600)
                 bot.send_message(message.chat.id, (f'Площадь воздуховода равна - {round(F, 5)} м2'))
+                Database.select_random(message)
             elif cagi == 'vent-6':
                 Do = 0.0188 * ((float(L) / (float(v))) ** 0.5) * 1000
                 bot.send_message(message.chat.id, (f'Рекомендуемый диаметр дифлектора типа ЦАГИ - {round(Do, 0)} мм'))
+                Database.select_random(message)
         except:
             bot.send_message(message.chat.id, "ошибка ведите /start")
 
@@ -34,6 +37,7 @@ class calculation:
         try:
             L = (float(F) * (float(v) * 3600))
             bot.send_message(message.chat.id, (f'Расход воздуха равен - {round(L, 5)} м3/час'))
+            Database.select_random(message)
         except:
             bot.send_message(message.chat.id, "ошибка ведите /start")
 
@@ -48,9 +52,11 @@ class assimialtion_thermo_and_cool:
             if comm == '/heat':
                 bot.send_message(message.chat.id, (
                     f'Вам {message.from_user.first_name} необходимо - {round(Q, 2)} кВт для нагрева воздуха! 🥵'))
+                Database.select_random(message)
             elif comm == '/cool':
                 bot.send_message(message.chat.id, (
                     f'Вам {message.from_user.first_name} необходимо - {round(Q, 2)} кВт для охлаждения воздуха! 🥶'))
+                Database.select_random(message)
         except:
             bot.send_message(message.chat.id, "ошибка ведите /start")
 
@@ -62,10 +68,12 @@ class assimialtion_thermo_and_cool:
             L = (float(Q) * 3600) / (float(p) * 1.005 * (float(dt) - float(t1)))
             bot.send_message(message.chat.id, (
                 f'Вам {message.from_user.first_name} необходимо - {round(L, 2)} м3/час для удавления {Q} кВт теплоты! 🥵'))
+            Database.select_random(message)
         elif comm == '/delete_water':
             L = float(Q) / ((float(dt) - float(t1)) * float(p))
             bot.send_message(message.chat.id, (
                 f'Вам {message.from_user.first_name} необходимо - {round(L, 2)} м3/час для удавления {Q} г/час влаги! 🐳'))
+            Database.select_random(message)
 
 class thermo_refrigeration:
 
@@ -74,10 +82,12 @@ class thermo_refrigeration:
         if name == '/water':
             G = float(Q) / (4.18 * float(dt))
             bot.send_message(message.chat.id, (f'Массовый расход воды в системе равен - {round(G, 3)} кг/с'))
+            Database.select_random(message)
         elif name == '/antifriz':
             cp = message.text.replace(',', '.')
             G = float(Q) / (float(cp) * float(dt))
             bot.send_message(message.chat.id, (f'Массовый расход антифриз в системе равен - {round(G, 3)} кг/с'))
+            Database.select_random(message)
 
     def scorost_teplonositel(message, G, type_tube):
         pw = message.text.replace(',', '.')
@@ -110,12 +120,14 @@ class thermo_refrigeration:
         for tube, place, speed in data:
             table.add_row([tube, f'{place:.5f}', f'{speed:.3f}'])
         bot.send_message(message.chat.id, f'<pre>{table}</pre>', parse_mode='html')
+        Database.select_random(message)
 
 class tools:
 
     def teploperedacha(message, tolshina, teploprov):
         k = 1/((1/8)+(float(tolshina)/1000) / float(teploprov)+(1/21))
         bot.send_message(message.chat.id, f'Коэффициент теплопередачи однослойной ограждающей стенки равен - {round(k, 3)} Вт/(м2*К)')
+        Database.select_random(message)
 
     def koeff_teplo(message, dicty, a1, a2):
         data = []
@@ -137,6 +149,7 @@ class tools:
            table.add_row([n, f'{b:.1f}', f'{v:.3f}', f'{r:.2f}'])
         bot.send_message(message.chat.id, f'<pre>{table}</pre>', parse_mode='html')
         bot.send_message(message.chat.id, f'Коэффициент теплопередачи многослойной ограждающей стенки равен - {round(k, 3)} Вт/(м2*К)')
+        Database.select_random(message)
 
     def temperature_conv(message, T, param):
         if param == '/K':
@@ -145,6 +158,8 @@ class tools:
             R = float(T)*1.8
             bot.send_message(message.chat.id, f'Кельвин: {T} K \n градус Цельсия: {C: .3f} ℃ \n '
                                               f'градус Фаренгейта: {F: .3f} ℉ \n градус Ранкина: {R: .3f} °R', parse_mode='html')
+            Database.select_random(message)
+
         elif param == '/C':
             K = float(T)+273.15
             F = float(T)*1.8+32
@@ -152,6 +167,8 @@ class tools:
             bot.send_message(message.chat.id,
                              f'Кельвин: {K: .3f} K \n градус Цельсия: {T} ℃ \n '
                              f'градус Фаренгейта: {F: .3f} ℉ \n градус Ранкина: {R: .3f} °R', parse_mode='html')
+            Database.select_random(message)
+
         elif param == '/F':
             K = (float(T)+459.67)*(5/9)
             C = (float(T)-32)*(5/9)
@@ -159,6 +176,8 @@ class tools:
             bot.send_message(message.chat.id,
                              f'Кельвин: {K: .3f} K \n градус Цельсия: {C: .3f} ℃ \n '
                              f'градус Фаренгейта: {T} ℉ \n градус Ранкина: {R: .3f} °R', parse_mode='html')
+            Database.select_random(message)
+
         elif param == '/R':
             K = float(T)/1.8
             C = (float(T)/1.8)-273.15
@@ -166,6 +185,7 @@ class tools:
             bot.send_message(message.chat.id,
                              f'Кельвин: {K: .3f} K \n градус Цельсия: {C: .3f} ℃ \n '
                              f'градус Фаренгейта: {F: .3f} ℉ \n градус Ранкина: {T} °R', parse_mode='html')
+            Database.select_random(message)
 
     def pressure_conv(message, T, param):
         P = float(T)
@@ -176,6 +196,8 @@ class tools:
             mm_rt_st = P*7.5006
             bot.send_message(message.chat.id, f' кПа: {T} \n кгс/см2: {kgs_cm2: .3f} \n Бар: {Bar: .3f}'
                                               f' \n м.вод.ст: {m_water_st: .3f} \n мм.рт.ст: {mm_rt_st: .3f}', parse_mode='html')
+            Database.select_random(message)
+
         elif param == '/kgs_cm2':
             kPa = (P/1.0197)*100
             Bar = P/1.0197
@@ -183,6 +205,8 @@ class tools:
             mm_rt_st = P*735.56
             bot.send_message(message.chat.id, f' кПа: {kPa: .3f} \n кгс/см2: {T} \n Бар: {Bar: .3f}'
                                               f' \n м.вод.ст: {m_water_st: .3f} \n мм.рт.ст: {mm_rt_st: .3f}', parse_mode='html')
+            Database.select_random(message)
+
         elif param == '/Bar':
             kgs_cm2 = P*1.0197
             kPa = P*100
@@ -190,6 +214,8 @@ class tools:
             mm_rt_st = P*750.06
             bot.send_message(message.chat.id, f' кПа: {kPa: .3f} \n кгс/см2: {kgs_cm2: .3f} \n Бар: {T}'
                                               f' \n м.вод.ст: {m_water_st: .3f} \n мм.рт.ст: {mm_rt_st: .3f}', parse_mode='html')
+            Database.select_random(message)
+
         elif param == '/m_water_st':
             kgs_cm2 = P/10
             Bar = P/10.197
@@ -197,6 +223,8 @@ class tools:
             mm_rt_st = P*73.55
             bot.send_message(message.chat.id, f' кПа: {kPa: .3f} \n кгс/см2: {kgs_cm2: .3f} \n Бар: {Bar: .3f}'
                                               f' \n м.вод.ст: {T} \n мм.рт.ст: {mm_rt_st: .3f}', parse_mode='html')
+            Database.select_random(message)
+
         elif param == '/mm_rt_st':
             kgs_cm2 = P/735.56
             Bar = P/750.06
@@ -204,11 +232,14 @@ class tools:
             kPa = P/7.5006
             bot.send_message(message.chat.id, f' кПа: {kPa: .3f} \n кгс/см2: {kgs_cm2: .3f} \n Бар: {Bar: .3f}'
                                               f' \n м.вод.ст: {m_water_st: .3f} \nмм.рт.ст: {T}', parse_mode='html')
+            Database.select_random(message)
 
     def heat_conv(message, T, param):
         if param == '/kBt':
             G = float(T)/1163
             bot.send_message(message.chat.id, f'кВт: {T} \n Гкал: {G: .4f}', parse_mode='html')
+            Database.select_random(message)
         elif param == '/Gkall':
             K = float(T) * 1163
             bot.send_message(message.chat.id, f'кВт: {K: .3f} \n Гкал: {T}', parse_mode='html')
+            Database.select_random(message)

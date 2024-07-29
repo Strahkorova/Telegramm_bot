@@ -1,6 +1,5 @@
 from time import sleep
 from config import bot
-from telebot import types
 from Class_vent import calculation, assimialtion_thermo_and_cool, thermo_refrigeration, tools
 import dialogs
 from dialogs import Messages, Sticers
@@ -11,7 +10,7 @@ import database
 @bot.message_handler(commands=['start'])
 #Создание кнопок в модели
 def start(mess):
-    Base.metadata.create_all(bind=database.engine) #Создаем базу данных
+    Base.metadata.create_all(bind=database.engine)      #Создаем базу данных
     bot.send_message(mess.chat.id, Messages.start(mess))
     if mess.from_user.id == 1125053880:
         bot.send_message(mess.chat.id, 'Каковы будут указания верховный магистр?', reply_markup=dialogs.markup)
@@ -488,4 +487,3 @@ while True:
     except Exception as _ex:
         print(_ex)
         sleep(15)
-

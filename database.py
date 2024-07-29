@@ -1,6 +1,3 @@
-import sqlite3
-import logging
-import os
 from config import bot
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String
