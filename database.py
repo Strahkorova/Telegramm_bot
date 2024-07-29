@@ -5,7 +5,7 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 import random
 
 # строка подключения
-sqlite_database = "sqlite:///galaxy.db"
+sqlite_database = "sqlite:///app/galaxy.db"
 
 # создаем движок SqlAlchemy
 engine = create_engine(sqlite_database)

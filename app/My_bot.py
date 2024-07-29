@@ -103,30 +103,43 @@ def callback_worker(call):
 def regulation(message):
     global Gvs
     Gvs = message.text.replace(',', '.')
-    presure = bot.send_message(message.chat.id, 'Укажите потери давления в гидравлической сети, Бар')
-    bot.register_next_step_handler(presure, Kvs_system)
+    if Gvs == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        presure = bot.send_message(message.chat.id, 'Укажите потери давления в гидравлической сети, Бар')
+        bot.register_next_step_handler(presure, Kvs_system)
 
 def Kvs_system(message):
     global dP
     dP = message.text.replace(',', '.')
-    K = (1.1*float(Gvs))/(float(dP)**0.5)
-    bot.send_message(message.chat.id, (
-        f'Вам {message.from_user.first_name} необходимо - {round(K, 3)} м3/час пропускной способности регулирующего клапана! 😱'))
+    if dP == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        K = (1.1*float(Gvs))/(float(dP)**0.5)
+        bot.send_message(message.chat.id, (
+            f'Вам {message.from_user.first_name} необходимо - {round(K, 3)} м3/час пропускной способности регулирующего клапана! 😱'))
+        Database.select_random(message)
 
 #Расчет площади сечения воздуховода и размера дефлектора ЦАГИ
 def scor_1(message):
     global L
     L = message.text.replace(',', '.')
-    if cagi == 'vent-2':
-        operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с')
-        bot.register_next_step_handler(operu, scor_2)
-    elif cagi == 'vent-6':
-        operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с,'
-                                                  'ВАЖНО: принимать равной половине скорости ветра согласно СП "Строительная климатология"!')
-        bot.register_next_step_handler(operu, scor_2)
+    if L == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        if cagi == 'vent-2':
+            operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с')
+            bot.register_next_step_handler(operu, scor_2)
+        elif cagi == 'vent-6':
+            operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с,'
+                                                      'ВАЖНО: принимать равной половине скорости ветра согласно СП "Строительная климатология"!')
+            bot.register_next_step_handler(operu, scor_2)
 
 def scor_2(message):
-    calculation.ploshad_and_CAGI(message, L, cagi)
+    if message.text == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        calculation.ploshad_and_CAGI(message, L, cagi)
 
 
 ########################################################################################################
@@ -165,6 +178,7 @@ def temperature(message):
         bot.register_next_step_handler(t, start_convert)
     elif param_convert == '/stop':
         bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+
 
 def number_heat(message):
     global param_convert
@@ -229,14 +243,20 @@ def one_step(message):
 def two_step(message):
     global tolshina
     tolshina = message.text.replace(',', '.')
-    num = bot.send_message(message.chat.id, 'Укажите коэффициент теплопроводности слоя в Вт/(м²*К)')
-    bot.register_next_step_handler(num, three_step)
+    if tolshina == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        num = bot.send_message(message.chat.id, 'Укажите коэффициент теплопроводности слоя в Вт/(м²*К)')
+        bot.register_next_step_handler(num, three_step)
 
 def three_step(message):
     global teploprovodnost
     teploprovodnost = message.text.replace(',', '.')
-    quethion = bot.send_message(message.chat.id, f'Добавить еще слой?:\n Да - /Yes \n Нет - /No', parse_mode='html')
-    bot.register_next_step_handler(quethion, four_step)
+    if teploprovodnost == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        quethion = bot.send_message(message.chat.id, f'Добавить еще слой?:\n Да - /Yes \n Нет - /No', parse_mode='html')
+        bot.register_next_step_handler(quethion, four_step)
 
 koeff_thermo = {} #Хранятся толщина и коэффициентр теплопроводности, где толщина это ключ
 
@@ -257,17 +277,27 @@ def four_step(message):
     elif yes_no == '/Yes':
         koeff_thermo[tolshina] = teploprovodnost
         one_step(message)
+    elif yes_no == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+
 
 def five_step(message):
     global alfa1
     alfa1 = message.text.replace(',', '.')
-    num = bot.send_message(message.chat.id, 'Укажите коэффициент теплоотдачи для второго вещества в Вт/(м²*К)')
-    bot.register_next_step_handler(num, six_step)
+    if alfa1 == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        num = bot.send_message(message.chat.id, 'Укажите коэффициент теплоотдачи для второго вещества в Вт/(м²*К)')
+        bot.register_next_step_handler(num, six_step)
 
 def six_step(message):
     global alfa2
     alfa2 = message.text.replace(',', '.')
-    tools.koeff_teplo(message, koeff_thermo, alfa1, alfa2)
+    if alfa2 == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        tools.koeff_teplo(message, koeff_thermo, alfa1, alfa2)
+        koeff_thermo.clear()
 
 
 
@@ -280,6 +310,8 @@ def open_thermo(message):
     if comm_water == '/water' or comm_water == '/antifriz':
         num = bot.send_message(message.chat.id, 'Укажите тепловую нагрузку, переносимую теплоносителем в кВт')
         bot.register_next_step_handler(num, teplo_water)
+    elif comm_water == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
     else:
         num = bot.send_message(message.chat.id, 'Укажите расход теплоносителя в кг/с')
         bot.register_next_step_handler(num, plotnost_water)
@@ -287,30 +319,42 @@ def open_thermo(message):
 def teplo_water(message):
     global Q
     Q = message.text.replace(',', '.')
-    plot = bot.send_message(message.chat.id, 'Укажите разность температур по воде, ℉')
-    if comm_water == '/water':
-        bot.register_next_step_handler(plot, rashet_rashod_water)
-    elif comm_water == '/antifriz':
-        bot.register_next_step_handler(plot, teploemkost)
+    if Q == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        plot = bot.send_message(message.chat.id, 'Укажите разность температур по воде, ℉')
+        if comm_water == '/water':
+            bot.register_next_step_handler(plot, rashet_rashod_water)
+        elif comm_water == '/antifriz':
+            bot.register_next_step_handler(plot, teploemkost)
 
 def teploemkost(message):
     global dt
     dt = message.text.replace(',', '.')
-    plot = bot.send_message(message.chat.id, 'Укажите удельную теплоемкость гликоля, кДж/(кг*℃)')
-    bot.register_next_step_handler(plot, rashet_rashod_water)
+    if dt == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        plot = bot.send_message(message.chat.id, 'Укажите удельную теплоемкость гликоля, кДж/(кг*℃)')
+        bot.register_next_step_handler(plot, rashet_rashod_water)
 
 def plotnost_water(message):
     global Gw
     Gw = message.text.replace(',', '.')
-    plot = bot.send_message(message.chat.id, 'Укажите плотность теплоносителя, кг/м3')
-    bot.register_next_step_handler(plot, rashet_rashod_water)
+    if Gw == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        plot = bot.send_message(message.chat.id, 'Укажите плотность теплоносителя, кг/м3')
+        bot.register_next_step_handler(plot, rashet_rashod_water)
 
 def rashet_rashod_water(message):
     dt = message.text.replace(',', '.')
-    if comm_water == '/water' or comm_water == '/antifriz':
-        thermo_refrigeration.rashod_teplonositel(message, Q, dt, comm_water)
+    if dt == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
     else:
-        thermo_refrigeration.scorost_teplonositel(message, Gw, comm_water)
+        if comm_water == '/water' or comm_water == '/antifriz':
+            thermo_refrigeration.rashod_teplonositel(message, Q, dt, comm_water)
+        else:
+            thermo_refrigeration.scorost_teplonositel(message, Gw, comm_water)
 
 
 #ассимиляция тепло- и влагоизбытков
@@ -328,31 +372,43 @@ def open(message):
 def plotnost_assim(message):
     global Q
     Q = message.text.replace(',', '.')
-    plot = bot.send_message(message.chat.id, 'Укажите плотность воздуха в кг/м3')
-    bot.register_next_step_handler(plot, delta_first)
+    if Q == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        plot = bot.send_message(message.chat.id, 'Укажите плотность воздуха в кг/м3')
+        bot.register_next_step_handler(plot, delta_first)
 
 def delta_first(message):
     global p
     p = message.text.replace(',', '.')
-    if comm_assim == '/delete_heat':
-        num = bot.send_message(message.chat.id, 'Укажите температуру приточного воздуха в ℃')
-        bot.register_next_step_handler(num, delta_second)
-    elif comm_assim == '/delete_water':
-        num = bot.send_message(message.chat.id, 'Укажите влагосодержание приточного воздуха г/кг')
-        bot.register_next_step_handler(num, delta_second)
+    if p == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        if comm_assim == '/delete_heat':
+            num = bot.send_message(message.chat.id, 'Укажите температуру приточного воздуха в ℃')
+            bot.register_next_step_handler(num, delta_second)
+        elif comm_assim == '/delete_water':
+            num = bot.send_message(message.chat.id, 'Укажите влагосодержание приточного воздуха г/кг')
+            bot.register_next_step_handler(num, delta_second)
 
 def delta_second(message):
     global t1
     t1 = message.text.replace(',', '.')
-    if comm_assim == '/delete_heat':
-        num = bot.send_message(message.chat.id, 'Укажите температуру удаляемого воздуха в ℃')
-        bot.register_next_step_handler(num, rash_assim)
-    elif comm_assim == '/delete_water':
-        num = bot.send_message(message.chat.id, 'Укажите влагосодержание удаляемого воздуха г/кг')
-        bot.register_next_step_handler(num, rash_assim)
+    if t1 == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        if comm_assim == '/delete_heat':
+            num = bot.send_message(message.chat.id, 'Укажите температуру удаляемого воздуха в ℃')
+            bot.register_next_step_handler(num, rash_assim)
+        elif comm_assim == '/delete_water':
+            num = bot.send_message(message.chat.id, 'Укажите влагосодержание удаляемого воздуха г/кг')
+            bot.register_next_step_handler(num, rash_assim)
 
 def rash_assim(message):
-    assimialtion_thermo_and_cool.assimilation(message, Q, t1, p, comm_assim)
+    if message.text == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        assimialtion_thermo_and_cool.assimilation(message, Q, t1, p, comm_assim)
 
 
 #Расчет количества теплоты и холода для обработки воздуха
@@ -366,17 +422,26 @@ def heat_and_cool(message):
 def plotnost(message):
     global L
     L = message.text.replace(',', '.')
-    plot = bot.send_message(message.chat.id, 'Укажите плотность воздуха в кг/м3')
-    bot.register_next_step_handler(plot, delta)
+    if L == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        plot = bot.send_message(message.chat.id, 'Укажите плотность воздуха в кг/м3')
+        bot.register_next_step_handler(plot, delta)
 
 def delta(message):
     global p
     p = message.text.replace(',', '.')
-    thermo = bot.send_message(message.chat.id, 'Укажите разность температур по воздуху в ℃')
-    bot.register_next_step_handler(thermo, rash)
+    if p == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        thermo = bot.send_message(message.chat.id, 'Укажите разность температур по воздуху в ℃')
+        bot.register_next_step_handler(thermo, rash)
 
 def rash(message):
-    assimialtion_thermo_and_cool.thermo_cool(message, L, p, heatcool)
+    if message.text == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        assimialtion_thermo_and_cool.thermo_cool(message, L, p, heatcool)
 
 
 #Расчет скорости воздуха и расход в круглом воздуховоде
@@ -390,19 +455,25 @@ def round_start(message):
 def round_2(message):
     global D
     D = message.text.replace(',', '.')
-    if round_com == '/round':
-        operu = bot.send_message(message.chat.id, 'Укажите расход воздуха в м3/час')
-        bot.register_next_step_handler(operu, round_3)
-    elif round_com == '/round_1':
-        operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с')
-        bot.register_next_step_handler(operu, round_3)
+    if D == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        if round_com == '/round':
+            operu = bot.send_message(message.chat.id, 'Укажите расход воздуха в м3/час')
+            bot.register_next_step_handler(operu, round_3)
+        elif round_com == '/round_1':
+            operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с')
+            bot.register_next_step_handler(operu, round_3)
 
 def round_3(message):
-    F = (3.14 * (float(D)/1000) ** 2) / 4
-    if round_com == '/round':
-        calculation.scorost(message, F)
-    elif round_com == '/round_1':
-        calculation.rashod(message, F)
+    if message.text == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        F = (3.14 * (float(D)/1000) ** 2) / 4
+        if round_com == '/round':
+            calculation.scorost(message, F)
+        elif round_com == '/round_1':
+            calculation.rashod(message, F)
 
 
 #Расчет скорости воздуха и расход в прямоугольном воздуховоде
@@ -416,31 +487,36 @@ def rectangle_1(message):
 def rectangle_2(message):
     global A
     A = message.text.replace(',', '.')
-    num_2 = bot.send_message(message.chat.id, 'Введите высоту воздуховода в мм')
-    bot.register_next_step_handler(num_2, rectangle_3)
+    if A == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        num_2 = bot.send_message(message.chat.id, 'Введите высоту воздуховода в мм')
+        bot.register_next_step_handler(num_2, rectangle_3)
 
 def rectangle_3(message):
     global B
     B = message.text.replace(',', '.')
-    if rectangle_com == '/rectangle':
-        operu = bot.send_message(message.chat.id, 'Укажите расход воздуха в м3/час')
-        bot.register_next_step_handler(operu, rectangle_4)
-    elif rectangle_com == '/rectangle_1':
-        operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с')
-        bot.register_next_step_handler(operu, rectangle_4)
+    if B == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
     else:
-        bot.send_message(message.chat.id, 'Произошла ошибка')
+        if rectangle_com == '/rectangle':
+            operu = bot.send_message(message.chat.id, 'Укажите расход воздуха в м3/час')
+            bot.register_next_step_handler(operu, rectangle_4)
+        elif rectangle_com == '/rectangle_1':
+            operu = bot.send_message(message.chat.id, 'Укажите скорость воздуха в м/с')
+            bot.register_next_step_handler(operu, rectangle_4)
+        else:
+            bot.send_message(message.chat.id, 'Произошла ошибка')
 
 def rectangle_4(message):
-    F = (float(A)*float(B))/1000000
-    if rectangle_com == '/rectangle':
-        calculation.scorost(message, F)
-    elif rectangle_com == '/rectangle_1':
-        calculation.rashod(message, F)
-
-
-
-
+    if message.text == '/stop':
+        bot.send_message(message.chat.id, 'Вы прервали выполнение функции')
+    else:
+        F = (float(A)*float(B))/1000000
+        if rectangle_com == '/rectangle':
+            calculation.scorost(message, F)
+        elif rectangle_com == '/rectangle_1':
+            calculation.rashod(message, F)
 
 
 
@@ -469,16 +545,6 @@ def dataBase_all(message):
     else:
         bot.send_message(message.chat.id, f'Шаг к темной стороне пытаешься сделать ты!', )
         bot.send_sticker(message.chat.id, Sticers.Nooo)
-
-
-
-
-
-
-
-
-
-
 
 
 while True:
