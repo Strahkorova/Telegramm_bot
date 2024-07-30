@@ -9,7 +9,7 @@ but_ventilation.row(telebot.types.InlineKeyboardButton('Расход возду�
 but_ventilation.row(telebot.types.InlineKeyboardButton('Кол-во тепла для нагрева или охлаждения воздуха', callback_data='vent-4'))
 but_ventilation.row(telebot.types.InlineKeyboardButton('Ассимиляция тепло - и влагоизбытков', callback_data='vent-5'))
 but_ventilation.row(telebot.types.InlineKeyboardButton('Подбор дефлектора типа ЦАГИ', callback_data='vent-6'))
-but_ventilation.row(telebot.types.InlineKeyboardButton('Свойства воздуха', callback_data='vent-7'))
+
 
 but_heat_cool = telebot.types.InlineKeyboardMarkup()
 but_heat_cool.row(telebot.types.InlineKeyboardButton('Расход теплоносителя', callback_data='heco-1'))
